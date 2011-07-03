@@ -38,8 +38,8 @@ class AuthMessage(IncomingMessage):
     '''
     type = 'auth'
     def set_data(self, data):
-        self._login = data['login']
-        self._password = data['password']
+        self.login = data['login']
+        self.password = data['password']
     
 
 # Заполняем словарь для быстрого поиска в дальнейшем:

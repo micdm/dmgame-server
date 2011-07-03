@@ -12,8 +12,8 @@ class Dispatcher(object):
     '''
     Класс для рассылки сообщений.
     '''
-    INCOMING_MESSAGES_TYPE = 'incoming'
-    OUTCOMING_MESSAGES_TYPE = 'outcoming'
+    INCOMING_MESSAGES_TYPE = 'INCOMING'
+    OUTCOMING_MESSAGES_TYPE = 'OUTCOMING'
     
     _subscription = {}
 
@@ -42,33 +42,25 @@ class Dispatcher(object):
             cls._dispatch(cls.OUTCOMING_MESSAGES_TYPE, message)
 
     @classmethod
-    def _subscribe(cls, key, callback):
-        '''
-        Добавляет коллбэк в подписку.
-        @param key: mixed
-        @param callback: function
-        '''
-        if key not in cls._subscription:
-            cls._subscription[key] = []
-        cls._subscription[key].append(callback)
-
-    @classmethod
-    def subscribe(cls, msg_class, callback):
+    def subscribe(cls, type, callback):
         '''
         Подписывает на сообщения определенного типа.
-        @param msg_class: dmgame.messages.Message
+        @param type: mixed
         @param callback: function
         '''
-        logger.debug('subscribing for messages of type "%s"'%msg_class.type)
-        cls._subscribe(msg_class, callback)
-    
+        logger.debug('subscribing for messages of type "%s"'%type)
+        if type not in cls._subscription:
+            cls._subscription[type] = []
+        cls._subscription[type].append(callback)
+
     @classmethod
-    def subscribe_for_type(cls, type, callback):
+    def unsubscribe(cls, type, callback):
         '''
-        Подписывает на все сообщения указанного типа.
-        @param type: string
+        Отписывается от получения сообщений.
+        @param type: mixed
         @param callback: function
         '''
-        if type not in (cls.INCOMING_MESSAGES_TYPE, cls.OUTCOMING_MESSAGES_TYPE):
-            raise Exception('unknown messages type "%s"'%type)
-        cls._subscribe(type, callback)
+        logger.debug('unsubscribing for messages of type "%s"'%type)
+        if type in cls._subscription:
+            if callback in cls._subscription[type]:
+                cls._subscription[type].remove(callback)

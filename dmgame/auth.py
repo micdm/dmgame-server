@@ -19,7 +19,9 @@ class AuthManager(object):
         Выполняется при запросе на аутентификацию.
         @param message: dmgame.messages.incoming.AuthMessage
         '''
-        result = outcoming.AuthMessage('foobar')
+        logger.debug('handling auth request')
+        result = outcoming.AuthMessage(outcoming.AuthMessage.STATUS_OK)
+        outcoming.create_reply(message, result)
         Dispatcher.dispatch(result)
     
     def init(self):

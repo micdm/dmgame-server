@@ -38,13 +38,16 @@ class AuthMessage(OutcomingMessage):
     '''
     Сообщение со статусом аутентификации.
     '''
+    STATUS_OK = 'OK'
+    
     type = 'auth'
-    def __init__(self, key, *args, **kwargs):
+    def __init__(self, status, *args, **kwargs):
         super(AuthMessage, self).__init__(*args, **kwargs)
-        self._key = key
+        self.status = status
 
     def _get_data(self):
-        return {'key': self._key}
+        return {'status': self.status}
+
 
 # Заполняем словарь для быстрого поиска в дальнейшем:
 _types = {}
@@ -59,3 +62,12 @@ def get_message_class(type):
     @return: type
     '''
     return _types.get(type)
+
+
+def create_reply(message, reply):
+    '''
+    Помечает одно сообщение как ответ на другое.
+    @param message: dmgame.messages.Message
+    @param reply: dmgame.messages.Message
+    '''
+    reply.handler_id = message.handler_id

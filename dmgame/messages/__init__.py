@@ -8,4 +8,6 @@ class Message(object):
     '''
     Базовый абстрактный класс сообщения.
     '''
-    pass
+    def __init__(self):
+        super(Message, self).__init__()
+        self.handler_id = None
