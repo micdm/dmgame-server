@@ -4,8 +4,9 @@
 @author: Mic, 2011
 '''
 
-from dmgame.messages import incoming, outcoming
 from dmgame.messages.dispatcher import Dispatcher
+from dmgame.messages.messages import ClientRequestMessage, ClientDisconnectedMessage, ServerResponseMessage
+from dmgame.servers.main.packets import incoming, outcoming
 from dmgame.utils.log import get_logger
 logger = get_logger(__name__)
 
@@ -17,16 +18,26 @@ class AuthManager(object):
     def _on_auth_request(self, message):
         '''
         Выполняется при запросе на аутентификацию.
-        @param message: dmgame.messages.incoming.AuthMessage
+        @param message: dmgame.messages.messages.ClientRequestMessage
         '''
-        logger.debug('handling auth request')
-        result = outcoming.AuthMessage(outcoming.AuthMessage.STATUS_OK)
-        outcoming.create_reply(message, result)
-        Dispatcher.dispatch(result)
+        packet = message.packet
+        if isinstance(packet, incoming.AuthPacket):
+            logger.debug('handling auth request')
+            packet = outcoming.AuthPacket(outcoming.AuthPacket.STATUS_OK)
+            message = ServerResponseMessage(message.handler_id, packet)
+            Dispatcher.dispatch(message)
+            
+    def _on_client_disconnected(self, message):
+        '''
+        Выполняется при отключении клиента.
+        @param message: dmgame.messages.messages.ClientDisconnectedMessage
+        '''
+        logger.debug('here will be code removing authenticated user')
     
     def init(self):
         '''
         Инициализация.
         '''
         logger.debug('initializing auth manager')
-        Dispatcher.subscribe(incoming.AuthMessage, self._on_auth_request)
+        Dispatcher.subscribe(ClientRequestMessage, self._on_auth_request)
+        Dispatcher.subscribe(ClientDisconnectedMessage, self._on_client_disconnected)

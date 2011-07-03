@@ -4,7 +4,6 @@
 @author: Mic, 2011
 '''
 
-from dmgame.messages import incoming, outcoming
 from dmgame.utils.log import get_logger
 logger = get_logger(__name__)
 
@@ -12,34 +11,19 @@ class Dispatcher(object):
     '''
     Класс для рассылки сообщений.
     '''
-    INCOMING_MESSAGES_TYPE = 'INCOMING'
-    OUTCOMING_MESSAGES_TYPE = 'OUTCOMING'
-    
     _subscription = {}
-
-    @classmethod
-    def _dispatch(cls, key, message):
-        '''
-        Вызывает коллбэки из подписки.
-        @param key: mixed
-        @param message: dmgame.messages.Message
-        '''
-        if key in cls._subscription:
-            for callback in cls._subscription[key]:
-                callback(message)
 
     @classmethod
     def dispatch(cls, message):
         '''
         Рассылает сообщение.
-        @param text: dmgame.messages.Message
+        @param text: dmgame.messages.messages.Message
         '''
         logger.debug('dispatching message %s'%message)
-        cls._dispatch(type(message), message)
-        if isinstance(message, incoming.IncomingMessage):
-            cls._dispatch(cls.INCOMING_MESSAGES_TYPE, message)
-        if isinstance(message, outcoming.OutcomingMessage):
-            cls._dispatch(cls.OUTCOMING_MESSAGES_TYPE, message)
+        key = type(message)
+        if key in cls._subscription:
+            for callback in cls._subscription[key]:
+                callback(message)
 
     @classmethod
     def subscribe(cls, type, callback):
