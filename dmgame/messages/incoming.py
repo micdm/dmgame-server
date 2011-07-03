@@ -15,7 +15,7 @@ class HelloMessage(Message):
     
     type = 'hello'
     
-    def set_data(self, data):
+    def __init__(self, data):
         logger.debug('message data is "%s"'%data)
     
 

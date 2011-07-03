@@ -44,9 +44,7 @@ class Converter(object):
         if msg_class is None:
             logger.debug('message class with type "%s" not found'%type)
             return None
-        message = msg_class()
-        message.set_data(data)
-        return message
+        return msg_class(data)
 
     @classmethod
     def unserialize(cls, text):

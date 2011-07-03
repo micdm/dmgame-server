@@ -9,9 +9,8 @@ class Message(object):
     Базовый абстрактный класс сообщения.
     '''
 
-    def set_data(self, data):
+    def __init__(self, data):
         '''
-        Заполняет поля сообщения.
         @param data: dict
         '''
-        raise NotImplementedError()
+        pass
