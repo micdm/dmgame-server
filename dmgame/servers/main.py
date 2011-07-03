@@ -4,12 +4,13 @@
 @author: Mic, 2011
 '''
 
-from tornado.escape import json_decode
 from tornado.ioloop import IOLoop
 from tornado.web import Application
 from tornado.websocket import WebSocketHandler
 
 from dmgame import settings
+from dmgame.messages.converter import Converter
+from dmgame.messages.dispatcher import Dispatcher
 from dmgame.utils.log import get_logger
 logger = get_logger(__name__)
 
@@ -24,16 +25,17 @@ class Handler(WebSocketHandler):
         '''
         logger.debug('client connected from %s'%self.request.remote_ip)
 
-    def on_message(self, json):
+    def on_message(self, text):
         '''
         Выполняется при получении сообщения.
-        @param json: string
+        @param text: string
         '''
-        logger.debug('received message of length %s'%len(json))
-        try:
-            data = json_decode(json)
-        except:
-            logger.debug('can not parse json')
+        logger.debug('received message of length %s'%len(text))
+        message = Converter.unserialize(text)
+        if message is not None:
+            Dispatcher.dispatch(message)
+        else:
+            logger.debug('message not dispatched')
             
     def on_close(self):
         '''
