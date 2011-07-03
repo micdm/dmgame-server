@@ -4,7 +4,7 @@
 @author: Mic, 2011
 '''
 
-from tornado.escape import json_decode
+from tornado.escape import json_decode, json_encode
 
 import dmgame.messages.incoming as incoming
 from dmgame.utils.log import get_logger
@@ -22,7 +22,11 @@ class Converter(object):
         @param message: dmgame.messages.Message
         @return: string
         '''
-        pass
+        try:
+            return json_encode(message.get_dict())
+        except:
+            logger.debug('can not serialize message to text')
+            return None
     
     @classmethod
     def _check_message_data(cls, data):
@@ -44,7 +48,9 @@ class Converter(object):
         if msg_class is None:
             logger.debug('message class with type "%s" not found'%type)
             return None
-        return msg_class(data)
+        message = msg_class()
+        message.set_data(data.get('data'))
+        return message
 
     @classmethod
     def unserialize(cls, text):
@@ -57,6 +63,6 @@ class Converter(object):
             data = json_decode(text)
             cls._check_message_data(data)
             return cls._build_message(data)
-        except:
-            logger.debug('can not unserialize text to message')
+        except Exception as e:
+            logger.debug('can not unserialize text to message: %s'%e)
             return None

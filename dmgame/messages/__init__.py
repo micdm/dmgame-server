@@ -8,9 +8,4 @@ class Message(object):
     '''
     Базовый абстрактный класс сообщения.
     '''
-
-    def __init__(self, data):
-        '''
-        @param data: dict
-        '''
-        pass
+    pass

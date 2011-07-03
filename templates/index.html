@@ -13,8 +13,7 @@
 
 			ws.onopen = function() {
 				console.log('opened');
-				ws.send('{"type": "foo"}');
-				ws.send('{"type": "hello", "params": {"bar": "baz"}}');
+				ws.send('{"type": "auth", "data": {"login": "login", "password": "password"}}');
 			};
 			
 			ws.onmessage = function(e) {
