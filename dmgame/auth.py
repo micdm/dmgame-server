@@ -33,27 +33,27 @@ class AuthManager(object):
     def __init__(self):
         self._authenticated = {}
         
-    def _dispatch_user_request_message(self, user, handler_id, packet):
+    def _dispatch_user_request_message(self, user, connection_id, packet):
         '''
         Отправляет сообщение от авторизованного пользователя.
         @param user: User
-        @param handler_id: int
+        @param connection_id: int
         @param packet: IncomingPacket
         '''
         logger.debug('handler authenticated, dispatching user request message')
-        message = UserRequestMessage(user, handler_id, packet)
+        message = UserRequestMessage(user, connection_id, packet)
         Dispatcher.dispatch(message)
         
-    def _authenticate_user(self, handler_id, packet):
+    def _authenticate_user(self, connection_id, packet):
         '''
         Аутентифицирует пользователя.
-        @param handler_id: int
+        @param connection_id: int
         @param packet: IncomingPacket
         '''
         logger.debug('handling auth request')
-        self._authenticated[handler_id] = User(1)
+        self._authenticated[connection_id] = User(1)
         response_packet = outcoming.AuthPacket(outcoming.AuthPacket.STATUS_OK)
-        message = ServerResponseMessage(handler_id, response_packet)
+        message = ServerResponseMessage(connection_id, response_packet)
         Dispatcher.dispatch(message)
     
     def _on_client_request(self, message):
@@ -61,12 +61,12 @@ class AuthManager(object):
         Выполняется при запросе от клиента.
         @param message: dmgame.messages.messages.ClientRequestMessage
         '''
-        handler_id = message.handler_id
+        connection_id = message.connection_id
         packet = message.packet
         if isinstance(packet, incoming.AuthPacket):
-            self._authenticate_user(handler_id, packet)
-        if handler_id in self._authenticated:
-            self._dispatch_user_request_message(self._authenticated[handler_id], handler_id, packet)
+            self._authenticate_user(connection_id, packet)
+        if connection_id in self._authenticated:
+            self._dispatch_user_request_message(self._authenticated[connection_id], connection_id, packet)
             
     def _on_client_disconnected(self, message):
         '''
@@ -74,11 +74,11 @@ class AuthManager(object):
         @param message: dmgame.messages.messages.ClientDisconnectedMessage
         '''
         logger.debug('removing authenticated user')
-        handler_id = message.handler_id
-        if handler_id in self._authenticated:
-            user = self._authenticated[handler_id]
+        connection_id = message.connection_id
+        if connection_id in self._authenticated:
+            user = self._authenticated[connection_id]
             logger.debug('user %s log out'%user)
-            del self._authenticated[handler_id]
+            del self._authenticated[connection_id]
 
     def init(self):
         '''

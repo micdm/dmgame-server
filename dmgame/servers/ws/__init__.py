@@ -119,7 +119,7 @@ class Server(object):
         '''
         text = Converter.serialize(message.packet)
         if text is not None:
-            handler_id = message.handler_id
+            handler_id = message.connection_id
             if handler_id in self._handlers:
                 self._handlers[handler_id].write_message(text)
         

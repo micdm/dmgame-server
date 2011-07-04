@@ -28,12 +28,12 @@ class ClientRequestMessage(Message):
     Получено сообщение от клиента.
     '''
 
-    def __init__(self, handler_id, packet):
+    def __init__(self, connection_id, packet):
         '''
-        @param handler_id: int
+        @param connection_id: int
         @param packet: dmgame.servers.ws.packets.incoming.IncomingPacket
         '''
-        self.handler_id = handler_id
+        self.connection_id = connection_id
         self.packet = packet
         
         
@@ -55,12 +55,12 @@ class ServerResponseMessage(Message):
     Отправляется сообщение от сервера.
     '''
 
-    def __init__(self, handler_id, packet):
+    def __init__(self, connection_id, packet):
         '''
-        @param handler_id: int
+        @param connection_id: int
         @param packet: dmgame.servers.ws.packets.outcoming.OutcomingPacket
         '''
-        self.handler_id = handler_id
+        self.connection_id = connection_id
         self.packet = packet
 
 
@@ -69,8 +69,8 @@ class ClientDisconnectedMessage(Message):
     Клиент отключился.
     '''
 
-    def __init__(self, handler_id):
+    def __init__(self, connection_id):
         '''
-        @param handler_id: int
+        @param connection_id: int
         '''
-        self.handler_id = handler_id
+        self.connection_id = connection_id
