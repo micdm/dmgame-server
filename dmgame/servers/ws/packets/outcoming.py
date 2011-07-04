@@ -4,7 +4,7 @@
 @author: Mic, 2011
 '''
 
-from dmgame.servers.main.packets import Packet
+from dmgame.servers.ws.packets import Packet
 from dmgame.utils.log import get_logger
 logger = get_logger(__name__)
 

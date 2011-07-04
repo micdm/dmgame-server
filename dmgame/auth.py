@@ -6,7 +6,7 @@
 
 from dmgame.messages.dispatcher import Dispatcher
 from dmgame.messages.messages import ClientRequestMessage, ClientDisconnectedMessage, ServerResponseMessage
-from dmgame.servers.main.packets import incoming, outcoming
+from dmgame.servers.ws.packets import incoming, outcoming
 from dmgame.utils.log import get_logger
 logger = get_logger(__name__)
 

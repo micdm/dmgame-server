@@ -11,7 +11,7 @@ DEBUG = True
 PROJECT_DIR = getcwd()
 
 SERVERS = {
-    'main': ('game.mic-dm.tom.ru', 8888),
+    'ws': ('game.mic-dm.tom.ru', 8888),
     'web': ('', 8080)
 }
 

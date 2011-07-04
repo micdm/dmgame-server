@@ -5,7 +5,7 @@
 '''
 from tornado.escape import json_decode, json_encode
 
-from dmgame.servers.main.packets import incoming 
+from dmgame.servers.ws.packets import incoming 
 from dmgame.utils.log import get_logger
 logger = get_logger(__name__)
 
@@ -17,7 +17,7 @@ class Converter(object):
     def serialize(cls, packet):
         '''
         Превращает пакет в текст.
-        @param message: dmgame.servers.main.packets.Packet
+        @param message: dmgame.servers.ws.packets.Packet
         @return: string
         '''
         try:
@@ -55,7 +55,7 @@ class Converter(object):
         '''
         Преобразовывает текст в пакет.
         @param text: string
-        @return: dmgame.servers.main.packets.Packet
+        @return: dmgame.servers.ws.packets.Packet
         '''
         try:
             data = json_decode(text)

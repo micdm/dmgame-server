@@ -13,7 +13,7 @@ from dmgame import settings
 from dmgame.auth import AuthManager
 from dmgame.messages.dispatcher import Dispatcher
 from dmgame.messages.messages import ClientRequestMessage, ClientDisconnectedMessage, ServerResponseMessage
-from dmgame.servers.main.converter import Converter
+from dmgame.servers.ws.converter import Converter
 from dmgame.utils.log import get_logger
 logger = get_logger(__name__)
 
@@ -139,7 +139,7 @@ class Server(object):
         '''
         Запускает сервер.
         '''
-        logger.info('starting main server on %s:%s'%self._address)
+        logger.info('starting websockets server on %s:%s'%self._address)
         self._init_application()
         self._init_subscription()
         self._init_modules()
@@ -148,14 +148,14 @@ class Server(object):
         '''
         Останавливает сервер.
         '''
-        logger.info('stopping main server')
+        logger.info('stopping websockets server')
 
 
 def start_server():
     '''
     Запускает сервер.
     '''
-    server = Server(settings.SERVERS['main'])
+    server = Server(settings.SERVERS['ws'])
     server.start()
     try:
         IOLoop.instance().start()

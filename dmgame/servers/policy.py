@@ -10,7 +10,7 @@ from dmgame import settings
 from dmgame.utils.log import get_logger
 logger = get_logger(__name__)
 
-POLICY_HOST = settings.SERVERS['main'][0]
+POLICY_HOST = settings.SERVERS['ws'][0]
 POLICY_PORT = 843
 
 def _get_policy():
@@ -23,7 +23,7 @@ def _get_policy():
         <cross-domain-policy>
             <allow-access-from domain="%s" to-ports="%s"/>
         </cross-domain-policy>
-    '''%settings.SERVERS['main']
+    '''%settings.SERVERS['ws']
 
 
 def start_server():
