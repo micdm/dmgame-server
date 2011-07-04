@@ -44,7 +44,7 @@ class Converter(object):
         type = data['type']
         packet_class = incoming.get_packet_class(type)
         if packet_class is None:
-            logger.debug('packet class with type "%s" not found'%type)
+            logger.debug('packet class with type %s not found'%type)
             return None
         packet = packet_class()
         packet.set_data(data.get('data'))

@@ -13,7 +13,7 @@ class OutcomingPacket(Packet):
     Базовый абстрактный класс для исходящих пакетов.
     '''
     def __str__(self):
-        return '"outcoming:%s"'%self.type
+        return '<outcoming:%s>'%self.type
     
     def _get_data(self):
         '''

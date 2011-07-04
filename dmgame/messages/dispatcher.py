@@ -32,7 +32,7 @@ class Dispatcher(object):
         @param type: mixed
         @param callback: function
         '''
-        logger.debug('subscribing for messages of type "%s"'%type)
+        logger.debug('subscribing for messages of type %s'%type)
         if type not in cls._subscription:
             cls._subscription[type] = []
         cls._subscription[type].append(callback)
@@ -44,7 +44,7 @@ class Dispatcher(object):
         @param type: mixed
         @param callback: function
         '''
-        logger.debug('unsubscribing for messages of type "%s"'%type)
+        logger.debug('unsubscribing for messages of type %s'%type)
         if type in cls._subscription:
             if callback in cls._subscription[type]:
                 cls._subscription[type].remove(callback)

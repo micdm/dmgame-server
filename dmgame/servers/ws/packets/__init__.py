@@ -8,3 +8,6 @@ class Packet(object):
     '''
     Базовый абстрактный класс пакета.
     '''
+    
+    def __str__(self):
+        return '<%s>'%type(self).__name__

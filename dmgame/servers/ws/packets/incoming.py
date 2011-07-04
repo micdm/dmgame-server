@@ -13,7 +13,7 @@ class IncomingPacket(Packet):
     Базовый абстрактный класс для входящих пакетов.
     '''
     def __str__(self):
-        return '"incoming:%s"'%self.type
+        return '<incoming:%s>'%self.type
     
     def set_data(self, data):
         '''
