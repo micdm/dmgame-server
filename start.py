@@ -7,7 +7,8 @@
 
 from sys import argv
 
-from dmgame.servers import policy, web, ws
+from dmgame.init import init
+from dmgame.servers import policy, web
 
 def start_server(name):
     '''
@@ -17,7 +18,7 @@ def start_server(name):
     servers = {
         'policy': policy.start_server,
         'web': web.start_server,
-        'ws': ws.start_server
+        'ws': init
     }
     if name in servers:
         servers[name]()

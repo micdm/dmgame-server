@@ -84,6 +84,6 @@ class AuthManager(object):
         '''
         Инициализация.
         '''
-        logger.debug('initializing auth manager')
+        logger.info('initializing auth manager')
         Dispatcher.subscribe(ClientRequestMessage, self._on_client_request)
         Dispatcher.subscribe(ClientDisconnectedMessage, self._on_client_disconnected)
