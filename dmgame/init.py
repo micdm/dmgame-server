@@ -6,6 +6,7 @@
 
 from dmgame import settings
 from dmgame.auth import AuthManager
+from dmgame.hall import HallManager
 from dmgame.servers.ws.server import Server
 from dmgame.utils.log import get_logger
 logger = get_logger(__name__)
@@ -16,5 +17,6 @@ def init():
     '''
     logger.info('initializing')
     AuthManager().init()
+    HallManager().init()
     Server(settings.SERVERS['ws']).init()
     logger.info('deinitializing')

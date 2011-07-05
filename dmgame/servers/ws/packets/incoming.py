@@ -30,11 +30,18 @@ class AuthPacket(IncomingPacket):
     def set_data(self, data):
         self.login = data['login']
         self.password = data['password']
+        
+        
+class HallPacket(IncomingPacket):
+    '''
+    Пакет на вход в игровой зал.
+    '''
+    type = 'hall'
     
 
 # Заполняем словарь для быстрого поиска в дальнейшем:
 _types = {}
-for packet_class in (AuthPacket,):
+for packet_class in (AuthPacket, HallPacket):
     _types[packet_class.type] = packet_class
 
 

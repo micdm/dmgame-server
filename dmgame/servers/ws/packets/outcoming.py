@@ -39,7 +39,7 @@ class AuthPacket(OutcomingPacket):
     Пакет со статусом аутентификации.
     '''
     STATUS_OK = 'OK'
-    
+
     type = 'auth'
     def __init__(self, status, *args, **kwargs):
         super(AuthPacket, self).__init__(*args, **kwargs)
@@ -47,11 +47,18 @@ class AuthPacket(OutcomingPacket):
 
     def _get_data(self):
         return {'status': self.status}
+    
+    
+class HallPacket(OutcomingPacket):
+    '''
+    Пакет "добро пожаловать в игровой зал".
+    '''
+    type = 'hall'
 
 
 # Заполняем словарь для быстрого поиска в дальнейшем:
 _types = {}
-for packet_class in (AuthPacket,):
+for packet_class in (AuthPacket, HallPacket):
     _types[packet_class.type] = packet_class
 
 
