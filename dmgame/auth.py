@@ -6,7 +6,8 @@
 
 from dmgame.messages.dispatcher import Dispatcher
 from dmgame.messages.messages import ClientRequestMessage, ClientDisconnectedMessage, ServerResponseMessage, UserRequestMessage
-from dmgame.servers.ws.packets import incoming, outcoming
+from dmgame.packets.incoming.auth import LoginPacket
+from dmgame.packets.outcoming.auth import LoginStatusPacket
 from dmgame.utils.log import get_logger
 logger = get_logger(__name__)
 
@@ -22,7 +23,7 @@ class User(object):
         self._id = id
         
     def __str__(self):
-        return 'user #%s'%self._id
+        return '#%s'%self._id
 
 
 class AuthManager(object):
@@ -52,7 +53,7 @@ class AuthManager(object):
         '''
         logger.debug('handling auth request')
         self._authenticated[connection_id] = User(1)
-        response_packet = outcoming.AuthPacket(outcoming.AuthPacket.STATUS_OK)
+        response_packet = LoginStatusPacket(LoginStatusPacket.STATUS_OK)
         message = ServerResponseMessage(connection_id, response_packet)
         Dispatcher.dispatch(message)
     
@@ -63,7 +64,7 @@ class AuthManager(object):
         '''
         connection_id = message.connection_id
         packet = message.packet
-        if isinstance(packet, incoming.AuthPacket):
+        if isinstance(packet, LoginPacket):
             self._authenticate_user(connection_id, packet)
         if connection_id in self._authenticated:
             self._dispatch_user_request_message(self._authenticated[connection_id], connection_id, packet)

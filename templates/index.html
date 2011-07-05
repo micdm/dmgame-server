@@ -8,11 +8,10 @@
 		<script type="text/javascript" src="static/web-socket-js/web_socket.js"></script>
 		<script type="text/javascript" src="static/dummy_client.js"></script>
 		<script type="text/javascript">
-			var queue = [];
-			queue.push({type: "auth", data: {login: "foo", password: "password"}});
-			queue.push({type: "hall"});
 			var client = new dummyClient('static/web-socket-js/WebSocketMain.swf', 'ws://game.mic-dm.tom.ru:8888');
-			client.init(queue);
+			client.addToQueue('auth', 'login', {login: 'foo', password: 'password'});
+			client.addToQueue('hall', 'enter');
+			client.init();
 		</script>
 	</head>
 	<body></body>

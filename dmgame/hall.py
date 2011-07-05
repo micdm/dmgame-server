@@ -6,7 +6,8 @@
 
 from dmgame.messages.dispatcher import Dispatcher
 from dmgame.messages.messages import ServerResponseMessage, UserRequestMessage
-from dmgame.servers.ws.packets import incoming, outcoming
+from dmgame.packets.incoming.hall import EnterPacket
+from dmgame.packets.outcoming.hall import WelcomePacket
 from dmgame.utils.log import get_logger
 logger = get_logger(__name__)
 
@@ -21,7 +22,7 @@ class HallManager(object):
         @param connection_id: int
         '''
         logger.debug('handling hall request')
-        packet = outcoming.HallPacket()
+        packet = WelcomePacket()
         message = ServerResponseMessage(connection_id, packet)
         Dispatcher.dispatch(message)
 
@@ -32,7 +33,7 @@ class HallManager(object):
         '''
         packet = message.packet
         connection_id = message.connection_id
-        if isinstance(packet, incoming.HallPacket):
+        if isinstance(packet, EnterPacket):
             self._dispatch_welcome_to_hall(connection_id)
 
     def init(self):

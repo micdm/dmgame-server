@@ -32,6 +32,7 @@ def get_logger(name):
     @return: logging.Logger
     '''
     logger = logging.getLogger(name)
+    logger.propagate = False
     logger.setLevel(logging.DEBUG)
     logger.addHandler(_get_handler())
     return logger

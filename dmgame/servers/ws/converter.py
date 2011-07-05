@@ -5,7 +5,7 @@
 '''
 from tornado.escape import json_decode, json_encode
 
-from dmgame.servers.ws.packets import incoming 
+from dmgame.packets import incoming
 from dmgame.utils.log import get_logger
 logger = get_logger(__name__)
 
@@ -17,7 +17,7 @@ class Converter(object):
     def serialize(cls, packet):
         '''
         Превращает пакет в текст.
-        @param message: dmgame.servers.ws.packets.Packet
+        @param message: dmgame.packets.outcoming.OutcomingPacket
         @return: string
         '''
         try:
@@ -32,8 +32,10 @@ class Converter(object):
         Проверяет корректность данных пакета.
         @param data: dict
         '''
-        if 'type' not in data:
-            raise Exception('packet data must contain "type" field')
+        if 'c' not in data or not data['c']:
+            raise Exception('packet data must contain non-empty "p" field')
+        if len(data['c'].split(':')) != 2:
+            raise Exception('packet code has bad format')
         
     @classmethod
     def _build_packet(cls, data):
@@ -41,13 +43,16 @@ class Converter(object):
         Создает пакет по набору данных.
         @param data: dict
         '''
-        type = data['type']
-        packet_class = incoming.get_packet_class(type)
+        code = data['c']
+        logger.debug('building packet "%s"'%code)
+        namespace, type = data['c'].split(':')
+        packet_class = incoming.get_packet_class(namespace, type)
         if packet_class is None:
-            logger.debug('packet class with type %s not found'%type)
+            logger.debug('packet class for "%s:%s" not found'%(namespace, type))
             return None
         packet = packet_class()
         packet.set_data(data.get('data'))
+        logger.debug('packet %s builded'%packet)
         return packet
 
     @classmethod
@@ -55,7 +60,7 @@ class Converter(object):
         '''
         Преобразовывает текст в пакет.
         @param text: string
-        @return: dmgame.servers.ws.packets.Packet
+        @return: dmgame.packets.incoming.IncomingPacket
         '''
         try:
             data = json_decode(text)

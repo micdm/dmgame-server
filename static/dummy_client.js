@@ -5,7 +5,9 @@
 
 function dummyClient(swf_location, server) {
 
-	function _doRequest(ws, queue) {
+	var queue = [];
+	
+	function _doRequest(ws) {
 		var msg = queue.shift();
 		if (msg) {
 			console.log('sending message');
@@ -15,7 +17,7 @@ function dummyClient(swf_location, server) {
 		}
 	}	
 	
-	function _initWebsocket(queue) {
+	function _initWebsocket() {
 		WEB_SOCKET_SWF_LOCATION = swf_location;
 		WEB_SOCKET_DEBUG = true;
 
@@ -23,12 +25,12 @@ function dummyClient(swf_location, server) {
 
 		ws.onopen = function() {
 			console.log('opened');
-			_doRequest(ws, queue);
+			_doRequest(ws);
 		};
 		
 		ws.onmessage = function(msg) {
 			console.log('message received: ', msg);
-			_doRequest(ws, queue);
+			_doRequest(ws);
 		};
 		
 		ws.onclose = function() {
@@ -41,8 +43,16 @@ function dummyClient(swf_location, server) {
 	}
 
 	return {
-		init: function(queue) {
-			_initWebsocket(queue);
-		}
+		addToQueue: function(namespace, type, data) {
+			var packet = {c: namespace + ':' + type};
+			if (data) {
+				packet.data = data
+			}
+			queue.push(packet);
+		},
+		
+		init: function() {
+			_initWebsocket();
+		} 
 	};
 }

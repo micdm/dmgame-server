@@ -31,7 +31,7 @@ class ClientRequestMessage(Message):
     def __init__(self, connection_id, packet):
         '''
         @param connection_id: int
-        @param packet: dmgame.servers.ws.packets.incoming.IncomingPacket
+        @param packet: dmgame.packets.incoming.IncomingPacket
         '''
         self.connection_id = connection_id
         self.packet = packet
@@ -58,7 +58,7 @@ class ServerResponseMessage(Message):
     def __init__(self, connection_id, packet):
         '''
         @param connection_id: int
-        @param packet: dmgame.servers.ws.packets.outcoming.OutcomingPacket
+        @param packet: dmgame.packets.outcoming.OutcomingPacket
         '''
         self.connection_id = connection_id
         self.packet = packet
