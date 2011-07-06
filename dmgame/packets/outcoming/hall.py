@@ -19,10 +19,18 @@ class WelcomePacket(HallPacket):
     Добро пожаловать в игровой зал.
     '''
 
-    type = 'hall'
+    type = 'welcome'
 
     def _get_data(self):
         '''
         Тут будет информация о зале - количество участников, доступные столы,
         прочая игровая информация. 
         '''
+
+
+class PartyInvitePacket(HallPacket):
+    '''
+    Приглашение начать игру.
+    '''
+
+    type = 'party_invite'

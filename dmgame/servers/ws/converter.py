@@ -32,9 +32,9 @@ class Converter(object):
         Проверяет корректность данных пакета.
         @param data: dict
         '''
-        if 'c' not in data or not data['c']:
-            raise Exception('packet data must contain non-empty "p" field')
-        if len(data['c'].split(':')) != 2:
+        if 'code' not in data or not data['code']:
+            raise Exception('packet data must contain non-empty "code" field')
+        if len(data['code'].split(':')) != 2:
             raise Exception('packet code has bad format')
         
     @classmethod
@@ -43,9 +43,9 @@ class Converter(object):
         Создает пакет по набору данных.
         @param data: dict
         '''
-        code = data['c']
+        code = data['code']
         logger.debug('building packet "%s"'%code)
-        namespace, type = data['c'].split(':')
+        namespace, type = code.split(':')
         packet_class = incoming.get_packet_class(namespace, type)
         if packet_class is None:
             logger.debug('packet class for "%s:%s" not found'%(namespace, type))

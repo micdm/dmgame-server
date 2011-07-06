@@ -25,7 +25,7 @@ class OutcomingPacket(Packet):
         Строит словарь по данным пакета.
         @return: dict
         '''
-        result = {'type': self.type}
+        result = {'code': '%s:%s'%(self.namespace, self.type)}
         data = self._get_data()
         if data is not None:
             result['data'] = data

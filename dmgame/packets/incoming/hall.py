@@ -20,3 +20,11 @@ class EnterPacket(HallPacket):
     '''
 
     type = 'enter'
+
+
+class PlayPacket(HallPacket):
+    '''
+    Пользователь хочет встать в очередь на игру.
+    '''
+
+    type = 'play'

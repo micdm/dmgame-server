@@ -10,7 +10,9 @@
 		<script type="text/javascript">
 			var client = new dummyClient('static/web-socket-js/WebSocketMain.swf', 'ws://game.mic-dm.tom.ru:8888');
 			client.addToQueue('auth', 'login', {login: 'foo', password: 'password'});
-			client.addToQueue('hall', 'enter');
+			client.on('auth', 'login_status', 'hall', 'enter');
+			client.on('hall', 'welcome', 'hall', 'play');
+			client.on('hall', 'party_invite', 'hall', 'accept_invite');
 			client.init();
 		</script>
 	</head>

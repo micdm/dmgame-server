@@ -5,17 +5,35 @@
 
 function dummyClient(swf_location, server) {
 
-	var queue = [];
+	var plain_queue = [];
+	var evented_queue = {};
+	
+	function _buildPacket(namespace, type, data) {
+		var packet = {code: namespace + ':' + type};
+		if (data) {
+			packet.data = data
+		}
+		return packet
+	}
 	
 	function _doRequest(ws) {
-		var msg = queue.shift();
+		var msg = plain_queue.shift();
 		if (msg) {
 			console.log('sending message');
 			ws.send($.toJSON(msg));
 		} else {
 			console.log('no messages left');
 		}
-	}	
+	}
+	
+	function _doRequestAfterEvent(ws, event) {
+		var msg = evented_queue[event];
+		if (msg) {
+			console.log('sending message');
+			ws.send($.toJSON(msg));
+			delete evented_queue[event];
+		}
+	}
 	
 	function _initWebsocket() {
 		WEB_SOCKET_SWF_LOCATION = swf_location;
@@ -31,6 +49,8 @@ function dummyClient(swf_location, server) {
 		ws.onmessage = function(msg) {
 			console.log('message received: ', msg);
 			_doRequest(ws);
+			var parsed = $.evalJSON(msg.data)
+			_doRequestAfterEvent(ws, parsed.code);
 		};
 		
 		ws.onclose = function() {
@@ -44,11 +64,13 @@ function dummyClient(swf_location, server) {
 
 	return {
 		addToQueue: function(namespace, type, data) {
-			var packet = {c: namespace + ':' + type};
-			if (data) {
-				packet.data = data
-			}
-			queue.push(packet);
+			var packet = _buildPacket(namespace, type, data)
+			plain_queue.push(packet);
+		},
+		
+		on: function(event_namespace, event_type, namespace, type, data) {
+			var packet = _buildPacket(namespace, type, data)
+			evented_queue[event_namespace + ':' + event_type] = packet;
 		},
 		
 		init: function() {

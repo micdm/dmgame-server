@@ -116,7 +116,9 @@ class Server(object):
         Выполняется при появлении исходящего сообщения.
         @param message: dmgame.messages.messages.ServerResponseMessage
         '''
-        text = Converter.serialize(message.packet)
+        packet = message.packet
+        logger.debug('sending packet %s'%packet)
+        text = Converter.serialize(packet)
         if text is not None:
             handler_id = message.connection_id
             if handler_id in self._handlers:

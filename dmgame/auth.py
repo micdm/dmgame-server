@@ -20,10 +20,15 @@ class User(object):
         '''
         @param id: int
         '''
-        self._id = id
+        self.id = id
+        
+    def __cmp__(self, other):
+        if self.id == other.id:
+            return 0
+        return -1
         
     def __str__(self):
-        return '#%s'%self._id
+        return '#%s'%self.id
 
 
 class AuthManager(object):

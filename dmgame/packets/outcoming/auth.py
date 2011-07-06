@@ -21,7 +21,7 @@ class LoginStatusPacket(AuthPacket):
 
     STATUS_OK = 'OK'
 
-    type = 'auth'
+    type = 'login_status'
 
     def __init__(self, status, *args, **kwargs):
         self.status = status
