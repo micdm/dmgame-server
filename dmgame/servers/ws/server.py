@@ -10,8 +10,8 @@ from tornado.web import Application
 from tornado.websocket import WebSocketHandler
 
 from dmgame import settings
-from dmgame.messages.dispatcher import Dispatcher
-from dmgame.messages.messages import ClientRequestMessage, ClientDisconnectedMessage, ServerResponseMessage
+from dmgame.messages.dispatcher import client_dispatcher
+import dmgame.messages.messages as messages
 from dmgame.servers.ws.converter import Converter
 from dmgame.utils.log import get_logger
 logger = get_logger(__name__)
@@ -75,8 +75,8 @@ class Server(object):
         logger.debug('parsing packet of length %s'%len(text))
         packet = Converter.unserialize(text)
         if packet is not None:
-            message = ClientRequestMessage(handler_id, packet)
-            Dispatcher.dispatch(message)
+            message = messages.ClientRequestMessage(handler_id, packet)
+            client_dispatcher.dispatch(message)
         
     def _close_handler(self, handler_id):
         '''
@@ -84,8 +84,8 @@ class Server(object):
         @param id: int
         '''
         logger.debug('removing handler #%s'%handler_id)
-        message = ClientDisconnectedMessage(handler_id)
-        Dispatcher.dispatch(message)
+        message = messages.ClientDisconnectedMessage(handler_id)
+        client_dispatcher.dispatch(message)
         del self._handlers[handler_id]
 
     def _create_handler(self, *args, **kwargs):
@@ -111,10 +111,10 @@ class Server(object):
         ], debug=settings.DEBUG)
         application.listen(self._address[1], self._address[0])
         
-    def _on_server_response_message(self, message):
+    def _on_client_response(self, message):
         '''
         Выполняется при появлении исходящего сообщения.
-        @param message: dmgame.messages.messages.ServerResponseMessage
+        @param message: ClientResponseMessage
         '''
         packet = message.packet
         logger.debug('sending packet %s'%packet)
@@ -128,7 +128,7 @@ class Server(object):
         '''
         Инициализирует подписку.
         '''
-        Dispatcher.subscribe(ServerResponseMessage, self._on_server_response_message)
+        client_dispatcher.subscribe(messages.ClientResponseMessage, self._on_client_response)
         
     def _init_loop(self):
         '''

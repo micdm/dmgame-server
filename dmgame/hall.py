@@ -4,7 +4,7 @@
 @author: Mic, 2011
 '''
 
-from dmgame.messages.dispatcher import Dispatcher
+from dmgame.messages.dispatcher import player_dispatcher, user_dispatcher
 import dmgame.messages.messages as messages
 import dmgame.packets.incoming.hall as incoming
 import dmgame.packets.outcoming.hall as outcoming
@@ -53,13 +53,13 @@ class PlayersParty(object):
         Выполняется при подтверждении пользователем готовности играть.
         @param message: AcceptInvitePacket
         '''
-        player = Player(message.user, message.connection_id)
+        player = message.player
         if player not in self._ready:
             self._ready.append(player)
         for player in self.players:
             packet = outcoming.PartyMemberReadyPacket(self.players, self._ready)
-            message = messages.ServerResponseMessage(player.connection_id, packet)
-            Dispatcher.dispatch(message)
+            message = messages.PlayerResponseMessage(player, packet)
+            player_dispatcher.dispatch(message)
         if len(self._ready) == len(self.players):
             logger.debug('starting game')
     
@@ -67,7 +67,7 @@ class PlayersParty(object):
         '''
         Подписывается на нужные сообщения.
         '''
-        Dispatcher.subscribe_for_user_request(incoming.AcceptInvitePacket, self._on_player_accepted)
+        player_dispatcher.subscribe_for_packet(incoming.AcceptInvitePacket, self._on_player_accepted)
     
     def invite_players(self):
         '''
@@ -75,8 +75,8 @@ class PlayersParty(object):
         '''
         for player in self.players:
             packet = outcoming.PartyInvitePacket()
-            message = messages.ServerResponseMessage(player.connection_id, packet)
-            Dispatcher.dispatch(message)
+            message = messages.PlayerResponseMessage(player, packet)
+            player_dispatcher.dispatch(message)
 
 
 class PlayersQueue(object):
@@ -132,15 +132,45 @@ class HallManager(object):
     def __init__(self):
         self._players_queue = PlayersQueue()
 
-    def _send_welcome_to_hall(self, connection_id):
+    def _on_user_request(self, message):
         '''
-        Отправляет приветствие вошедшему в игровой зал.
-        @param connection_id: int
+        Рассылает сообщение, что от игрока получен запрос.
+        @param message: UserRequestMessage
         '''
-        logger.debug('handling hall request')
+        logger.debug('sending player request message')
+        player = Player(message.user, message.connection_id)
+        new_message = messages.PlayerRequestMessage(player, message.packet)
+        player_dispatcher.dispatch(new_message)
+        
+    def _on_user_disconnected(self, message):
+        '''
+        Рассылает сообщение, что игрок отключился.
+        @param message: UserDisconnectedMessage
+        '''
+        logger.debug('sending player disconnected message')
+        player = Player(message.user, message.connection_id)
+        new_message = messages.PlayerDisconnectedMessage(player)
+        player_dispatcher.dispatch(new_message)
+        
+    def _on_player_response(self, message):
+        '''
+        Рассылает сообщение, что пользователь получает ответ.
+        @param message: PlayerResponseMessage
+        '''
+        logger.debug('sending user response message')
+        player = message.player
+        new_message = messages.UserResponseMessage(player.user, player.connection_id, message.packet)
+        user_dispatcher.dispatch(new_message)
+
+    def _on_player_enter_request(self, message):
+        '''
+        Выполняется при запросе пользователя на вход в зал.
+        @param message: EnterPacket
+        '''
+        logger.debug('handling hall enter request')
         packet = outcoming.WelcomePacket()
-        message = messages.ServerResponseMessage(connection_id, packet)
-        Dispatcher.dispatch(message)
+        message = messages.PlayerResponseMessage(message.player, packet)
+        player_dispatcher.dispatch(message)
         
     def _add_to_queue(self, player):
         '''
@@ -159,46 +189,28 @@ class HallManager(object):
             logger.debug('party %s found, removing party from queue and sending invites'%party)
             self._players_queue.remove_party(party)
             party.invite_players()
-        
-#    def _on_user_enter_request(self, message):
-#        '''
-#        Выполняется при запросе пользователя на вход в зал.
-#        @param message: EnterMessage
-#        '''
-#        self._send_welcome_to_hall(message.connection_id)
-#
-#    def _on_user_play_request(self, message):
-#        '''
-#        Выполняется при запросе пользователя на игру.
-#        @param message: PlayPacket
-#        '''
-#        player = Player(message.user, message.connection_id)
-#        self._add_to_queue(player)
 
-    def _on_user_request(self, message):
+    def _on_player_play_request(self, message):
         '''
-        Рассылает сообщение, что от игрока получен запрос.
-        @param message: UserRequestMessage
+        Выполняется при запросе пользователя на игру.
+        @param message: PlayPacket
         '''
-        logger.debug('sending player request message')
-        player = Player(message.user, message.connection_id)
-        player_message = messages.PlayerRequestMessage(player, message.packet)
-        Dispatcher.dispatch(player_message)
-    
-    def _on_user_disconnected(self, message):
+        logger.debug('handling hall play request')
+        self._add_to_queue(message.player)
+        
+    def _subscribe(self):
         '''
-        Рассылает сообщение, что игрок отключился.
-        @param message: UserDisconnectedMessage
+        Подписывается на всякие сообщения.
         '''
-        logger.debug('sending player disconnected message')
-        player = Player(message.user, message.connection_id)
-        player_message = messages.PlayerDisconnectedMessage(player)
-        Dispatcher.dispatch(player_message)
+        user_dispatcher.subscribe(messages.UserRequestMessage, self._on_user_request)
+        user_dispatcher.subscribe(messages.UserDisconnectedMessage, self._on_user_disconnected)
+        player_dispatcher.subscribe(messages.PlayerResponseMessage, self._on_player_response)
+        player_dispatcher.subscribe_for_packet(incoming.EnterPacket, self._on_player_enter_request)
+        player_dispatcher.subscribe_for_packet(incoming.PlayPacket, self._on_player_play_request)
 
     def init(self):
         '''
         Инициализация.
         '''
         logger.info('initializing hall manager')
-        Dispatcher.subscribe(messages.UserRequestMessage, self._on_user_request)
-        Dispatcher.subscribe(messages.UserDisconnectedMessage, self._on_user_disconnected)
+        self._subscribe()

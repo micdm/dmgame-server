@@ -35,6 +35,20 @@ class ClientRequestMessage(Message):
         '''
         self.connection_id = connection_id
         self.packet = packet
+
+        
+class ClientResponseMessage(Message):
+    '''
+    Отправляется сообщение от сервера.
+    '''
+
+    def __init__(self, connection_id, packet):
+        '''
+        @param connection_id: int
+        @param packet: OutcomingPacket
+        '''
+        self.connection_id = connection_id
+        self.packet = packet
         
         
 class ClientDisconnectedMessage(Message):
@@ -49,20 +63,6 @@ class ClientDisconnectedMessage(Message):
         self.connection_id = connection_id
         
         
-class ServerResponseMessage(Message):
-    '''
-    Отправляется сообщение от сервера.
-    '''
-
-    def __init__(self, connection_id, packet):
-        '''
-        @param connection_id: int
-        @param packet: dmgame.packets.outcoming.OutcomingPacket
-        '''
-        self.connection_id = connection_id
-        self.packet = packet
-        
-        
 class UserRequestMessage(Message):
     '''
     Получено сообщение от авторизованного пользователя.
@@ -73,6 +73,22 @@ class UserRequestMessage(Message):
         @param user: User
         @param connection_id: int
         @param packet: IncomingPacket
+        '''
+        self.user = user
+        self.connection_id = connection_id
+        self.packet = packet
+        
+        
+class UserResponseMessage(Message):
+    '''
+    Ответ авторизованному пользователю.
+    '''
+
+    def __init__(self, user, connection_id, packet):
+        '''
+        @param user: User
+        @param connection_id: int
+        @param packet: OutcomingPacket
         '''
         self.user = user
         self.connection_id = connection_id
@@ -102,6 +118,20 @@ class PlayerRequestMessage(Message):
         '''
         @param player: Player
         @param packet: IncomingPacket
+        '''
+        self.player = player
+        self.packet = packet
+        
+        
+class PlayerResponseMessage(Message):
+    '''
+    Ответ игроку.
+    '''
+
+    def __init__(self, player, packet):
+        '''
+        @param player: Player
+        @param packet: OutcomingPacket
         '''
         self.player = player
         self.packet = packet
