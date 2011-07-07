@@ -63,7 +63,7 @@ class ServerResponseMessage(Message):
         self.packet = packet
         
         
-class UserRequestMessage(ClientRequestMessage):
+class UserRequestMessage(Message):
     '''
     Получено сообщение от авторизованного пользователя.
     '''
@@ -74,11 +74,12 @@ class UserRequestMessage(ClientRequestMessage):
         @param connection_id: int
         @param packet: IncomingPacket
         '''
-        super(UserRequestMessage, self).__init__(connection_id, packet)
         self.user = user
+        self.connection_id = connection_id
+        self.packet = packet
         
         
-class UserDisconnectedMessage(ClientDisconnectedMessage):
+class UserDisconnectedMessage(Message):
     '''
     Авторизованный пользователь отключился.
     '''
@@ -88,5 +89,32 @@ class UserDisconnectedMessage(ClientDisconnectedMessage):
         @param user: User
         @param connection_id: int
         '''
-        super(UserDisconnectedMessage, self).__init__(connection_id)
         self.user = user
+        self.connection_id = connection_id
+        
+        
+class PlayerRequestMessage(Message):
+    '''
+    Запрос от игрока.
+    '''
+
+    def __init__(self, player, packet):
+        '''
+        @param player: Player
+        @param packet: IncomingPacket
+        '''
+        self.player = player
+        self.packet = packet
+        
+        
+class PlayerDisconnectedMessage(Message):
+    '''
+    Игрок отключился.
+    '''
+
+    def __init__(self, player):
+        '''
+        @param player: Player
+        '''
+        self.player = player
+            
