@@ -42,16 +42,32 @@ class PlayersParty(object):
         @param players: list
         '''
         self.players = players
+        self._ready = []
         self._subscribe()
 
     def __str__(self):
         return '<party of %s>'%len(self.players)
     
+    def _on_player_accepted(self, message):
+        '''
+        Выполняется при подтверждении пользователем готовности играть.
+        @param message: AcceptInvitePacket
+        '''
+        player = Player(message.user, message.connection_id)
+        if player not in self._ready:
+            self._ready.append(player)
+        for player in self.players:
+            packet = outcoming.PartyMemberReadyPacket(self.players, self._ready)
+            message = ServerResponseMessage(player.connection_id, packet)
+            Dispatcher.dispatch(message)
+        if len(self._ready) == len(self.players):
+            logger.debug('starting game')
+    
     def _subscribe(self):
         '''
         Подписывается на нужные сообщения.
         '''
-        
+        Dispatcher.subscribe_for_user_request(incoming.AcceptInvitePacket, self._on_player_accepted)
     
     def invite_players(self):
         '''

@@ -28,3 +28,11 @@ class PlayPacket(HallPacket):
     '''
 
     type = 'play'
+
+
+class AcceptInvitePacket(HallPacket):
+    '''
+    Пользователь готов начать игру.
+    '''
+    
+    type = 'accept_invite'

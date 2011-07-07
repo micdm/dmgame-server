@@ -6,6 +6,15 @@
 
 from dmgame.packets.outcoming import OutcomingPacket
 
+def player_as_dict(player):
+    '''
+    Превращает объект игрока в словарь. 
+    @param player: Player
+    @return: dict
+    '''
+    return {'id': player.user.id}
+
+
 class HallPacket(OutcomingPacket):
     '''
     Игровой зал.
@@ -34,3 +43,29 @@ class PartyInvitePacket(HallPacket):
     '''
 
     type = 'party_invite'
+
+
+class PartyMemberReadyPacket(HallPacket):
+    '''
+    Еще один участник группы готов начать игру.
+    '''
+    
+    type = 'party_member_ready'
+    
+    def __init__(self, players, ready_players):
+        '''
+        @param players: list
+        @param ready_players: list
+        '''
+        self.players = players
+        self.ready_players = ready_players
+
+    def _get_data(self):
+        ready = []
+        non_ready = []
+        for player in self.players:
+            if player in self.ready_players:
+                ready.append(player_as_dict(player))
+            else:
+                non_ready.append(player_as_dict(player))
+        return {'ready': ready, 'non_ready': non_ready}
