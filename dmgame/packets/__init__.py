@@ -4,11 +4,21 @@
 @author: Mic, 2011
 '''
 
-class Packet(object):
+class PacketMeta(type):
     '''
-    Базовый абстрактный класс пакета.
+    Для красивых принтов ;).
     '''
 
     def __str__(self):
         return '<%s:%s:%s>'%(self.direction, self.namespace, self.type)
 
+
+class Packet(object):
+    '''
+    Базовый абстрактный класс пакета.
+    '''
+    
+    __metaclass__ = PacketMeta
+
+    def __str__(self):
+        return '<%s:%s:%s>'%(self.direction, self.namespace, self.type)

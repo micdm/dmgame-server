@@ -22,10 +22,11 @@ class User(object):
         '''
         self.id = id
         
-    def __cmp__(self, other):
-        if self.id == other.id:
-            return 0
-        return -1
+    def __eq__(self, other):
+        return self.id == other.id
+    
+    def __ne__(self, other):
+        return not self.__eq__(other)
         
     def __str__(self):
         return '#%s'%self.id
@@ -39,14 +40,14 @@ class AuthManager(object):
     def __init__(self):
         self._authenticated = {}
         
-    def _dispatch_user_request_message(self, user, connection_id, packet):
+    def _send_user_request_message(self, user, connection_id, packet):
         '''
         Отправляет сообщение от авторизованного пользователя.
         @param user: User
         @param connection_id: int
         @param packet: IncomingPacket
         '''
-        logger.debug('handler authenticated, dispatching user request message')
+        logger.debug('dispatching user request message')
         message = UserRequestMessage(user, connection_id, packet)
         Dispatcher.dispatch(message)
         
@@ -72,7 +73,7 @@ class AuthManager(object):
         if isinstance(packet, LoginPacket):
             self._authenticate_user(connection_id, packet)
         if connection_id in self._authenticated:
-            self._dispatch_user_request_message(self._authenticated[connection_id], connection_id, packet)
+            self._send_user_request_message(self._authenticated[connection_id], connection_id, packet)
             
     def _on_client_disconnected(self, message):
         '''

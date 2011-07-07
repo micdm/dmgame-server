@@ -6,8 +6,8 @@
 
 from dmgame.messages.dispatcher import Dispatcher
 from dmgame.messages.messages import ServerResponseMessage, UserRequestMessage
-from dmgame.packets.incoming.hall import EnterPacket, PlayPacket
-from dmgame.packets.outcoming.hall import WelcomePacket, PartyInvitePacket
+import dmgame.packets.incoming.hall as incoming
+import dmgame.packets.outcoming.hall as outcoming
 from dmgame.utils.log import get_logger
 logger = get_logger(__name__)
 
@@ -25,10 +25,11 @@ class Player(object):
         self.user = user
         self.connection_id = connection_id
         
-    def __cmp__(self, other):
-        if self.user == other.user and self.connection_id == other.connection_id:
-            return 0
-        return -1
+    def __eq__(self, other):
+        return self.user == other.user and self.connection_id == other.connection_id
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
 
 
 class PlayersParty(object):
@@ -41,16 +42,23 @@ class PlayersParty(object):
         @param players: list
         '''
         self.players = players
+        self._subscribe()
 
     def __str__(self):
         return '<party of %s>'%len(self.players)
     
-    def send_invites(self):
+    def _subscribe(self):
+        '''
+        Подписывается на нужные сообщения.
+        '''
+        
+    
+    def invite_players(self):
         '''
         Рассылает приглашения игрокам начать игру.
         '''
         for player in self.players:
-            packet = PartyInvitePacket()
+            packet = outcoming.PartyInvitePacket()
             message = ServerResponseMessage(player.connection_id, packet)
             Dispatcher.dispatch(message)
 
@@ -114,7 +122,7 @@ class HallManager(object):
         @param connection_id: int
         '''
         logger.debug('handling hall request')
-        packet = WelcomePacket()
+        packet = outcoming.WelcomePacket()
         message = ServerResponseMessage(connection_id, packet)
         Dispatcher.dispatch(message)
         
@@ -134,24 +142,27 @@ class HallManager(object):
         else:
             logger.debug('party %s found, removing party from queue and sending invites'%party)
             self._players_queue.remove_party(party)
-            party.send_invites()
+            party.invite_players()
         
-    def _on_user_request(self, message):
+    def _on_user_enter_request(self, message):
         '''
-        Выполняется при запросе пользователя.
-        @param message: Message
+        Выполняется при запросе пользователя на вход в зал.
+        @param message: EnterMessage
         '''
-        packet = message.packet
-        connection_id = message.connection_id
-        if isinstance(packet, EnterPacket):
-            self._send_welcome_to_hall(connection_id)
-        if isinstance(packet, PlayPacket):
-            player = Player(message.user, connection_id)
-            self._add_to_queue(player)
+        self._send_welcome_to_hall(message.connection_id)
+
+    def _on_user_play_request(self, message):
+        '''
+        Выполняется при запросе пользователя на игру.
+        @param message: PlayPacket
+        '''
+        player = Player(message.user, message.connection_id)
+        self._add_to_queue(player)
 
     def init(self):
         '''
         Инициализация.
         '''
         logger.info('initializing hall manager')
-        Dispatcher.subscribe(UserRequestMessage, self._on_user_request)
+        Dispatcher.subscribe_for_user_request(incoming.EnterPacket, self._on_user_enter_request)
+        Dispatcher.subscribe_for_user_request(incoming.PlayPacket, self._on_user_play_request)

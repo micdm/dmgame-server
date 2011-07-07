@@ -11,7 +11,7 @@ def _get_formatter():
     Возвращает форматировщик.
     @return: logging.Formatter
     '''
-    return logging.Formatter('%(asctime)s [%(levelname)s] %(message)s')
+    return logging.Formatter('%(asctime)s [%(levelname)s] [%(module)s] %(message)s')
 
 
 def _get_handler():
