@@ -186,15 +186,15 @@ class PlayersQueue(object):
             count = self.PARTY_SIZE - 1
             return PlayersParty(self._queue[:count] + [last])
         return None
+    
 
-
-class HallManager(object):
+class MessageResender(object):
     '''
-    Игровой зал.
+    Пересыльщик сообщений на новый уровень - от пользователя к игроку.
     '''
-
+    
     def __init__(self):
-        self._players_queue = PlayersQueue()
+        self._subscribe()
 
     def _on_user_request(self, message):
         '''
@@ -225,6 +225,24 @@ class HallManager(object):
         player = message.player
         new_message = messages.UserResponseMessage(player.user, player.connection_id, message.packet)
         user_dispatcher.dispatch(new_message)
+        
+    def _subscribe(self):
+        '''
+        Подписывается на сообщения.
+        '''
+        user_dispatcher.subscribe(messages.UserRequestMessage, self._on_user_request)
+        user_dispatcher.subscribe(messages.UserDisconnectedMessage, self._on_user_disconnected)
+        player_dispatcher.subscribe(messages.PlayerResponseMessage, self._on_player_response)
+
+
+class HallManager(object):
+    '''
+    Игровой зал.
+    '''
+
+    def __init__(self):
+        self._players_queue = PlayersQueue()
+        self._message_resender = MessageResender()
 
     def _on_player_enter_request(self, message):
         '''
@@ -266,9 +284,6 @@ class HallManager(object):
         '''
         Подписывается на всякие сообщения.
         '''
-        user_dispatcher.subscribe(messages.UserRequestMessage, self._on_user_request)
-        user_dispatcher.subscribe(messages.UserDisconnectedMessage, self._on_user_disconnected)
-        player_dispatcher.subscribe(messages.PlayerResponseMessage, self._on_player_response)
         player_dispatcher.subscribe_for_packet(incoming.EnterPacket, self._on_player_enter_request)
         player_dispatcher.subscribe_for_packet(incoming.PlayPacket, self._on_player_play_request)
 
