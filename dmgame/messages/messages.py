@@ -147,4 +147,15 @@ class PlayerDisconnectedMessage(Message):
         @param player: Player
         '''
         self.player = player
-            
+
+
+class PartyDismissMessage(Message):
+    '''
+    Группа распущена.
+    '''
+
+    def __init__(self, party):
+        '''
+        @param party: PlayersParty
+        '''
+        self.party = party

@@ -10,6 +10,7 @@ import dmgame.packets.incoming.hall as incoming
 import dmgame.packets.outcoming.hall as outcoming
 from dmgame.utils.log import get_logger
 logger = get_logger(__name__)
+from dmgame.utils.timer import Timer
 
 class Player(object):
     '''
@@ -43,10 +44,38 @@ class PlayersParty(object):
         '''
         self.players = players
         self._ready = []
+        self._timer = None
         self._subscribe()
+        self._start_timer()
 
     def __str__(self):
         return '<party of %s>'%len(self.players)
+    
+    def _send_dismiss_message_to_players(self):
+        '''
+        Рассылает участникам сообщение о роспуске группы.
+        '''
+        for player in self.players:
+            packet = outcoming.PartyDismissPacket()
+            message = messages.PlayerResponseMessage(player, packet)
+            player_dispatcher.dispatch(message)
+            
+    def _send_dismiss_message(self):
+        '''
+        Рассылает сообщение о роспуске группы.
+        '''
+        message = messages.PartyDismissMessage(self)
+        player_dispatcher.dispatch(message)
+    
+    def _dismiss(self):
+        '''
+        Распускает группу.
+        '''
+        logger.debug('dismissing party')
+        self._unsubscribe()
+        self._stop_timer()
+        self._send_dismiss_message_to_players()
+        self._send_dismiss_message()
     
     def _on_player_accepted(self, message):
         '''
@@ -61,15 +90,50 @@ class PlayersParty(object):
             message = messages.PlayerResponseMessage(player, packet)
             player_dispatcher.dispatch(message)
         if len(self._ready) == len(self.players):
+            self._stop_timer()
             logger.debug('starting game')
+            
+    def _on_player_disconnected(self, message):
+        '''
+        Выполняется при отключении игрока.
+        @param message: PlayerDisconnectedMessage
+        '''
+        self._dismiss()
     
     def _subscribe(self):
         '''
         Подписывается на нужные сообщения.
         '''
         player_dispatcher.subscribe_for_packet(incoming.AcceptInvitePacket, self._on_player_accepted)
+        player_dispatcher.subscribe(messages.PlayerDisconnectedMessage, self._on_player_disconnected)
+        
+    def _unsubscribe(self):
+        '''
+        Отписывается от сообщений.
+        '''
+        player_dispatcher.unsubscribe_from_packet(incoming.AcceptInvitePacket, self._on_player_accepted)
+        player_dispatcher.unsubscribe(messages.PlayerDisconnectedMessage, self._on_player_disconnected)
+        
+    def _start_timer(self):
+        '''
+        Запускает таймер, по истечении которого группа будет распущена.
+        '''
+        logger.debug('starting party timer')
+        self._timer = Timer(5, self._dismiss)
+        self._timer.start()
+        
+    def _stop_timer(self):
+        '''
+        Останавливает таймер.
+        '''
+        if self._timer:
+            logger.debug('stopping party timer')
+            self._timer.stop()
+            self._timer = None
+        else:
+            logger.debug('party timer already stopped')
     
-    def invite_players(self):
+    def invite(self):
         '''
         Рассылает приглашения игрокам начать игру.
         '''
@@ -188,7 +252,7 @@ class HallManager(object):
         else:
             logger.debug('party %s found, removing party from queue and sending invites'%party)
             self._players_queue.remove_party(party)
-            party.invite_players()
+            party.invite()
 
     def _on_player_play_request(self, message):
         '''

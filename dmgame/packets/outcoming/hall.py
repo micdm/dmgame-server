@@ -69,3 +69,11 @@ class PartyMemberReadyPacket(HallPacket):
             else:
                 non_ready.append(player_as_dict(player))
         return {'ready': ready, 'non_ready': non_ready}
+    
+    
+class PartyDismissPacket(HallPacket):
+    '''
+    Группа распущена.
+    '''
+    
+    type = 'party_dismiss'
