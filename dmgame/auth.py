@@ -5,7 +5,7 @@
 '''
 
 from dmgame.messages.dispatcher import Dispatcher
-from dmgame.messages.messages import ClientRequestMessage, ClientDisconnectedMessage, ServerResponseMessage, UserRequestMessage
+import dmgame.messages.messages as messages
 from dmgame.packets.incoming.auth import LoginPacket
 from dmgame.packets.outcoming.auth import LoginStatusPacket
 from dmgame.utils.log import get_logger
@@ -47,8 +47,8 @@ class AuthManager(object):
         @param connection_id: int
         @param packet: IncomingPacket
         '''
-        logger.debug('dispatching user request message')
-        message = UserRequestMessage(user, connection_id, packet)
+        logger.debug('sending user request message')
+        message = messages.UserRequestMessage(user, connection_id, packet)
         Dispatcher.dispatch(message)
         
     def _authenticate_user(self, connection_id, packet):
@@ -60,7 +60,7 @@ class AuthManager(object):
         logger.debug('handling auth request')
         self._authenticated[connection_id] = User(1)
         response_packet = LoginStatusPacket(LoginStatusPacket.STATUS_OK)
-        message = ServerResponseMessage(connection_id, response_packet)
+        message = messages.ServerResponseMessage(connection_id, response_packet)
         Dispatcher.dispatch(message)
     
     def _on_client_request(self, message):
@@ -75,6 +75,16 @@ class AuthManager(object):
         if connection_id in self._authenticated:
             self._send_user_request_message(self._authenticated[connection_id], connection_id, packet)
             
+    def _send_user_disconnected_message(self, user, connection_id):
+        '''
+        Рассылает сообщение, что пользователь отключился.
+        @param user: User
+        @param connection_id: int
+        '''
+        logger.debug('sending user disconnected message')
+        message = messages.UserDisconnectedMessage(user, connection_id)
+        Dispatcher.dispatch(message)
+            
     def _on_client_disconnected(self, message):
         '''
         Выполняется при отключении клиента.
@@ -85,6 +95,7 @@ class AuthManager(object):
         if connection_id in self._authenticated:
             user = self._authenticated[connection_id]
             logger.debug('user %s log out'%user)
+            self._send_user_disconnected_message(user, connection_id)
             del self._authenticated[connection_id]
 
     def init(self):
@@ -92,5 +103,5 @@ class AuthManager(object):
         Инициализация.
         '''
         logger.info('initializing auth manager')
-        Dispatcher.subscribe(ClientRequestMessage, self._on_client_request)
-        Dispatcher.subscribe(ClientDisconnectedMessage, self._on_client_disconnected)
+        Dispatcher.subscribe(messages.ClientRequestMessage, self._on_client_request)
+        Dispatcher.subscribe(messages.ClientDisconnectedMessage, self._on_client_disconnected)

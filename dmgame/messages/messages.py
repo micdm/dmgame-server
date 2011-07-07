@@ -37,19 +37,18 @@ class ClientRequestMessage(Message):
         self.packet = packet
         
         
-class UserRequestMessage(ClientRequestMessage):
+class ClientDisconnectedMessage(Message):
     '''
-    Получено сообщение от авторизованного пользователя.
+    Клиент отключился.
     '''
 
-    def __init__(self, user, *args, **kwargs):
+    def __init__(self, connection_id):
         '''
-        @param user: object
+        @param connection_id: int
         '''
-        super(UserRequestMessage, self).__init__(*args, **kwargs)
-        self.user = user
-
-
+        self.connection_id = connection_id
+        
+        
 class ServerResponseMessage(Message):
     '''
     Отправляется сообщение от сервера.
@@ -62,15 +61,32 @@ class ServerResponseMessage(Message):
         '''
         self.connection_id = connection_id
         self.packet = packet
-
-
-class ClientDisconnectedMessage(Message):
+        
+        
+class UserRequestMessage(ClientRequestMessage):
     '''
-    Клиент отключился.
+    Получено сообщение от авторизованного пользователя.
     '''
 
-    def __init__(self, connection_id):
+    def __init__(self, user, connection_id, packet):
         '''
+        @param user: User
+        @param connection_id: int
+        @param packet: IncomingPacket
+        '''
+        super(UserRequestMessage, self).__init__(connection_id, packet)
+        self.user = user
+        
+        
+class UserDisconnectedMessage(ClientDisconnectedMessage):
+    '''
+    Авторизованный пользователь отключился.
+    '''
+
+    def __init__(self, user, connection_id):
+        '''
+        @param user: User
         @param connection_id: int
         '''
-        self.connection_id = connection_id
+        super(UserDisconnectedMessage, self).__init__(connection_id)
+        self.user = user
