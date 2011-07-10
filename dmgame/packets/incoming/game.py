@@ -16,7 +16,7 @@ class GamePacket(IncomingPacket):
 
 class PlayerTurnPacket(GamePacket):
     '''
-    Игрок ходит
+    Игрок ходит.
     '''
 
     type = 'turn'

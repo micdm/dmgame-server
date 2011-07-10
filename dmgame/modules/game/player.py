@@ -31,6 +31,9 @@ class Player(object):
 
     def __ne__(self, other):
         return not self.__eq__(other)
+    
+    def __str__(self):
+        return '<%s:%s>'%(self.user, self.connection_id)
 
 
 class PlayersParty(object):
