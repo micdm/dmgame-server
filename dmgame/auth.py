@@ -122,7 +122,7 @@ class AuthManager(object):
         logger.debug('removing authenticated user')
         connection_id = message.connection_id
         if connection_id in self._authenticated:
-            del self._authenticated
+            del self._authenticated[connection_id]
 
     def _subscribe(self):
         '''
