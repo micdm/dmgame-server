@@ -64,7 +64,7 @@ class PlayersParty(object):
         '''
         Рассылает сообщение о роспуске группы.
         '''
-        message = messages.PartyDismissMessage(self)
+        message = messages.PartyDismissedMessage(self)
         player_dispatcher.dispatch(message)
     
     def _dismiss(self):
@@ -91,7 +91,8 @@ class PlayersParty(object):
             player_dispatcher.dispatch(message)
         if len(self._ready) == len(self.players):
             self._stop_timer()
-            logger.debug('starting game')
+            message = messages.GameStartedMessage(self)
+            player_dispatcher.dispatch(message)
             
     def _on_player_disconnected(self, message):
         '''

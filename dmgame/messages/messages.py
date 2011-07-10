@@ -149,11 +149,23 @@ class PlayerDisconnectedMessage(Message):
         self.player = player
 
 
-class PartyDismissMessage(Message):
+class PartyDismissedMessage(Message):
     '''
     Группа распущена.
     '''
 
+    def __init__(self, party):
+        '''
+        @param party: PlayersParty
+        '''
+        self.party = party
+        
+        
+class GameStartedMessage(Message):
+    '''
+    Игра началась.
+    '''
+    
     def __init__(self, party):
         '''
         @param party: PlayersParty
