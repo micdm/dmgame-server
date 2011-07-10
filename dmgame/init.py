@@ -5,8 +5,8 @@
 '''
 
 from dmgame import settings
-from dmgame.auth import AuthManager
-from dmgame.hall import HallManager
+from dmgame.modules.auth.manager import AuthManager
+from dmgame.modules.hall.manager import HallManager
 from dmgame.servers.ws.server import Server
 from dmgame.utils.log import get_logger
 logger = get_logger(__name__)
