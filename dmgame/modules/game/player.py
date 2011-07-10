@@ -90,6 +90,7 @@ class PlayersParty(object):
             message = messages.PlayerResponseMessage(player, packet)
             player_dispatcher.dispatch(message)
         if len(self._ready) == len(self.players):
+            self._unsubscribe()
             self._stop_timer()
             message = messages.GameStartedMessage(self)
             player_dispatcher.dispatch(message)
@@ -105,15 +106,14 @@ class PlayersParty(object):
         '''
         Подписывается на нужные сообщения.
         '''
-        player_dispatcher.subscribe_for_packet(incoming.AcceptInvitePacket, self._on_player_accepted)
-        player_dispatcher.subscribe(messages.PlayerDisconnectedMessage, self._on_player_disconnected)
+        player_dispatcher.subscribe_for_packet(incoming.AcceptInvitePacket, self._on_player_accepted, self)
+        player_dispatcher.subscribe(messages.PlayerDisconnectedMessage, self._on_player_disconnected, self)
         
     def _unsubscribe(self):
         '''
         Отписывается от сообщений.
         '''
-        player_dispatcher.unsubscribe_from_packet(incoming.AcceptInvitePacket, self._on_player_accepted)
-        player_dispatcher.unsubscribe(messages.PlayerDisconnectedMessage, self._on_player_disconnected)
+        player_dispatcher.unsubscribe_from_all(self)
         
     def _start_timer(self):
         '''
