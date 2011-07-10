@@ -6,6 +6,8 @@
 
 import logging
 
+from dmgame.settings import ENABLE_LOGGING_FOR
+
 def _get_formatter():
     '''
     Возвращает форматировщик.
@@ -25,6 +27,18 @@ def _get_handler():
     return handler
 
 
+def _need_enable_logger(name):
+    '''
+    Нужно ли включить логгер?
+    @param name: string
+    @return: bool
+    '''
+    for module in ENABLE_LOGGING_FOR:
+        if name.startswith(module):
+            return True
+    return False
+
+
 def get_logger(name):
     '''
     Настраивает и возвращает логгер.
@@ -34,5 +48,8 @@ def get_logger(name):
     logger = logging.getLogger(name)
     logger.propagate = False
     logger.setLevel(logging.DEBUG)
-    logger.addHandler(_get_handler())
+    if _need_enable_logger(name):
+        logger.addHandler(_get_handler())
+    else:
+        logger.disabled = True
     return logger
