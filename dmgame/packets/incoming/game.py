@@ -12,3 +12,14 @@ class GamePacket(IncomingPacket):
     '''
 
     namespace = 'game'
+
+
+class PlayerTurnPacket(GamePacket):
+    '''
+    Игрок ходит
+    '''
+
+    type = 'turn'
+    
+    def set_data(self, data):
+        self.data = data

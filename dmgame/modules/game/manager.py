@@ -6,7 +6,7 @@
 
 from dmgame.messages.dispatcher import player_dispatcher 
 import dmgame.messages.messages as messages
-from dmgame.modules.game.table import GamblingTable
+import dmgame.modules.game.tables.a_la_21 as a_la_21
 from dmgame.utils.log import get_logger
 logger = get_logger(__name__)
 
@@ -24,7 +24,7 @@ class GameManager(object):
         @param message: GameStartedMessage
         '''
         logger.debug('starting game')
-        table = GamblingTable(message.party)
+        table = a_la_21.GamblingTable(message.party)
         self._tables.append(table)
 
     def _subscribe(self):
