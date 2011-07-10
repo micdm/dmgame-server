@@ -1,0 +1,13 @@
+Для запуска:
+
+# Забираем исходники:
+cd /home/dev/
+virtualenv dmgame && cd dmgame
+./bin/easy_install tornado
+git clone git://github.com/micdm/dmgame.git project && cd project
+
+# Запускаем (в разных терминалах):
+sudo ./start policy
+./start web
+./start ws
+ 
