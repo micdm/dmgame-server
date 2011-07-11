@@ -33,14 +33,9 @@ class Card(object):
         Возвращает ранг как строку.
         @return: string
         '''
-        if self.rang == 13:
-            return 'A'
-        if self.rang == 12:
-            return 'K'
-        if self.rang == 11:
-            return 'Q'
-        if self.rang == 10:
-            return 'J'
+        rangs = {10: 'J', 11: 'Q', 12: 'K', 13: 'A'}
+        if self.rang in rangs:
+            return rangs[self.rang]
         return self.rang
         
     def __str__(self):
@@ -119,23 +114,10 @@ class CardDeck(object):
         return cards
 
 
-class PlayerHand(object):
+class PlayerHand(CardSet):
     '''
     Карты игрока.
     '''
-    
-    def __init__(self):
-        '''
-        @param cards: list
-        '''
-        self._cards = []
-
-    def add_cards(self, cards):
-        '''
-        Добавляет карты в руку.
-        @param cards: CardSet
-        '''
-        self._cards.extend(cards)
 
 
 class CardGamblingTable(GamblingTable):
@@ -166,4 +148,10 @@ class CardGamblingTable(GamblingTable):
             self._hands[player] = PlayerHand()
         cards = self._deck.get_cards(count)
         logger.debug('giving cards %s to player %s'%(cards, player))
-        self._hands[player].add_cards(cards)
+        self._hands[player].extend(cards)
+        
+    def _open_all_cards(self):
+        '''
+        Открывает карты всех игроков.
+        '''
+        # TODO: разослать всем событие открыть карты

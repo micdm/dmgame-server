@@ -8,9 +8,36 @@ from random import choice
 
 from dmgame.messages.dispatcher import player_dispatcher 
 import dmgame.messages.messages as messages
+import dmgame.modules.game.errors as errors
 import dmgame.packets.incoming.game as incoming
 from dmgame.utils.log import get_logger
 logger = get_logger(__name__)
+
+class PlayerTurn(object):
+    '''
+    Ход игрока.
+    '''
+
+    def __init__(self, player, turn_data):
+        '''
+        @param player: Player
+        @param turn_data: dict
+        '''
+        self.player = player
+        self._handle_turn_data(turn_data)
+        self._check()
+    
+    def _handle_turn_data(self, turn_data):
+        '''
+        Заполняет объект из входящих данных.
+        @param turn_data: dict
+        '''
+    
+    def _check(self):
+        '''
+        Проверяет полученный объект.
+        '''
+
 
 class GamblingTable(object):
     '''
@@ -25,6 +52,7 @@ class GamblingTable(object):
         @param party: PlayersParty
         '''
         self._party = party
+        self._first_turning_player = None
         self._turning_player = None
         self._subscribe()
         self._start()
@@ -47,6 +75,8 @@ class GamblingTable(object):
         @param player: Player
         '''
         logger.debug('player %s turning now'%player)
+        if self._first_turning_player is None:
+            self._first_turning_player = player
         self._turning_player = player
         
     def _set_random_player_turning(self):
@@ -55,6 +85,18 @@ class GamblingTable(object):
         '''
         player = choice(self._party.players)
         self._set_player_turning(player)
+        
+    def _set_next_player_turning(self):
+        '''
+        Передает ход следующему игроку.
+        '''
+        players = self._party.players
+        current = players.index(self._turning_player)
+        if current == len(players) - 1:
+            next = 0
+        else:
+            next = current + 1
+        self._set_next_player_turning(players[next])
     
     def _set_player_result(self, player, result):
         '''
@@ -62,6 +104,14 @@ class GamblingTable(object):
         @param player: Player
         '''
         logger.debug('player %s has now result %s'%(player, result))
+        
+    def _get_turn_object(self, turn_data):
+        '''
+        Возвращает объект хода.
+        @param turn_data: dict
+        @return: PlayerTurn
+        '''
+        raise NotImplementedError()
 
     def _handle_player_turn(self, message):
         '''
@@ -70,7 +120,8 @@ class GamblingTable(object):
         '''
         player = message.player
         if player == self._turning_player:
-            self._on_player_turn(player, message.turn)
+            turn = self._get_turn_object(message.turn)
+            self._on_player_turn(player, turn)
             
     def _handle_player_leave(self, message):
         '''
