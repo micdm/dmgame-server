@@ -19,6 +19,13 @@ class Card(object):
     SUIT_DIAMONDS = '♦'
     SUIT_CLUBS = '♣'
     SUIT_SPADES = '♠'
+    
+    RANG_TWO = 2
+    RANG_SIX = 6
+    RANG_JACK = 11
+    RANG_QUEEN = RANG_JACK + 1
+    RANG_KING = RANG_QUEEN + 1
+    RANG_ACE = RANG_KING + 1
 
     def __init__(self, suit, rang):
         '''
@@ -33,13 +40,41 @@ class Card(object):
         Возвращает ранг как строку.
         @return: string
         '''
-        rangs = {10: 'J', 11: 'Q', 12: 'K', 13: 'A'}
+        rangs = {self.RANG_JACK: 'J', self.RANG_QUEEN: 'Q', self.RANG_KING: 'K', self.RANG_ACE: 'A'}
         if self.rang in rangs:
             return rangs[self.rang]
         return self.rang
         
     def __str__(self):
         return '%s%s'%(self.suit, self._get_rang_as_string())
+    
+    def is_jack(self):
+        '''
+        Валет?
+        @return: bool
+        '''
+        return self.rang == self.RANG_JACK
+    
+    def is_queen(self):
+        '''
+        Дама?
+        @return: bool
+        '''
+        return self.rang == self.RANG_QUEEN
+    
+    def is_king(self):
+        '''
+        Король?
+        @return: bool
+        '''
+        return self.rang == self.RANG_KING
+    
+    def is_ace(self):
+        '''
+        Туз?
+        @return: bool
+        '''
+        return self.rang == self.RANG_ACE
     
     
 class CardSet(list):
@@ -75,9 +110,9 @@ class CardDeck(object):
         @return: CardSet
         '''
         if type == self.TYPE_36:
-            return CardSet(Card(suit, rang) for rang in range(6, 14))
+            return CardSet(Card(suit, rang) for rang in range(Card.RANG_SIX, Card.RANG_ACE + 1))
         if type == self.TYPE_52:
-            return CardSet(Card(suit, rang) for rang in range(2, 14))
+            return CardSet(Card(suit, rang) for rang in range(Card.RANG_TWO, Card.RANG_ACE + 1))
         
     def _get_one_deck(self, type):
         '''

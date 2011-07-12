@@ -28,17 +28,29 @@ class GamblingTable(CardGamblingTable):
 
     MAX_SUM = 21
 
+    def _get_card_value(self, card):
+        '''
+        Возвращает вес карты.
+        @param card: Card
+        @return: int
+        '''
+        if card.is_jack():
+            return 2
+        if card.is_queen():
+            return 3
+        if card.is_king():
+            return 4
+        if card.is_ace():
+            return 11
+        return card.rang
+
     def _get_hand_sum(self, hand):
         '''
         Подсчитывает сумму карт в руке.
         @param hand: PlayerHand
         @return: int
         '''
-        sum = 0
-        for card in hand:
-            # TODO: посчитать сумму
-            pass
-        return sum
+        return sum(self._get_card_value(card) for card in hand)
 
     def _get_turn_object(self, turn_data):
         if 'type' not in turn_data:
@@ -73,7 +85,7 @@ class GamblingTable(CardGamblingTable):
         if isinstance(turn, OneMoreCardTurn):
             self._give_cards_to_member(member, 1)
             sum = self._get_hand_sum(member.hand)
-            if sum > self.MAX_SUM:
+            if sum >= self.MAX_SUM:
                 self._end()
         if isinstance(turn, CardsEnoughTurn):
             if member.is_first_turning:
