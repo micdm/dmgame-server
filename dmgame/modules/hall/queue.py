@@ -36,7 +36,7 @@ class PlayersQueue(object):
         Удаляет из очереди игроков группы.
         @param party: PlayersParty
         '''
-        for player in party.players:
+        for player in party:
             self._queue.remove(player)
         
     def find_party_for_last_player(self):

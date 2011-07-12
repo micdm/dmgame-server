@@ -36,7 +36,7 @@ class Player(object):
         return '<%s:%s>'%(self.user, self.connection_id)
 
 
-class PlayersParty(object):
+class PlayersParty(list):
     '''
     Компания игроков.
     '''
@@ -45,20 +45,21 @@ class PlayersParty(object):
         '''
         @param players: list
         '''
-        self.players = players
+        super(PlayersParty, self).__init__()
+        self.extend(players)
         self._ready = []
         self._timer = None
         self._subscribe()
         self._start_timer()
 
     def __str__(self):
-        return '<party of %s>'%len(self.players)
+        return '<party of %s>'%len(self)
     
     def _send_dismiss_message_to_players(self):
         '''
         Рассылает участникам сообщение о роспуске группы.
         '''
-        for player in self.players:
+        for player in self:
             packet = outcoming.PartyDismissPacket()
             message = messages.PlayerResponseMessage(player, packet)
             player_dispatcher.dispatch(message)
@@ -88,11 +89,11 @@ class PlayersParty(object):
         player = message.player
         if player not in self._ready:
             self._ready.append(player)
-        for player in self.players:
-            packet = outcoming.PartyMemberReadyPacket(self.players, self._ready)
+        for player in self:
+            packet = outcoming.PartyMemberReadyPacket(self, self._ready)
             message = messages.PlayerResponseMessage(player, packet)
             player_dispatcher.dispatch(message)
-        if len(self._ready) == len(self.players):
+        if len(self._ready) == len(self):
             self._unsubscribe()
             self._stop_timer()
             message = messages.GameStartedMessage(self)
@@ -141,7 +142,7 @@ class PlayersParty(object):
         '''
         Рассылает приглашения игрокам начать игру.
         '''
-        for player in self.players:
+        for player in self:
             packet = outcoming.PartyInvitePacket()
             message = messages.PlayerResponseMessage(player, packet)
             player_dispatcher.dispatch(message)

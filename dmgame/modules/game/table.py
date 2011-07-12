@@ -86,7 +86,7 @@ class GamblingTable(object):
         '''
         member_class = self._get_member_class()
         members = {}
-        for player in party.players:
+        for player in party:
             members[player] = member_class(player)
         return members
 
