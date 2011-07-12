@@ -6,7 +6,7 @@
 
 from random import shuffle
 
-from dmgame.modules.game.table import GamblingTable, TableMember
+from dmgame.modules.game.table import GamblingTable, TableMember as BaseTableMember
 from dmgame.utils.log import get_logger
 logger = get_logger(__name__)
 
@@ -155,10 +155,10 @@ class MemberHand(CardSet):
     '''
     
     
-class CardTableMember(TableMember):
+class TableMember(BaseTableMember):
     
     def __init__(self, player):
-        super(CardTableMember, self).__init__(player)
+        super(TableMember, self).__init__(player)
         self.hand = MemberHand()
 
 
@@ -173,7 +173,7 @@ class CardGamblingTable(GamblingTable):
         super(CardGamblingTable, self).__init__(*args, **kwargs)
         
     def _get_member_class(self):
-        return CardTableMember
+        return TableMember
 
     def _create_deck(self, type, count):
         '''

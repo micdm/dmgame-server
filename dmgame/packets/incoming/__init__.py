@@ -21,6 +21,7 @@ class IncomingPacket(Packet):
 
 
 from dmgame.packets.incoming.auth import *
+from dmgame.packets.incoming.game import *
 from dmgame.packets.incoming.hall import *
 
 # Собираем все классы пакетов в словарь.

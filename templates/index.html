@@ -13,6 +13,7 @@
 			client.on('auth', 'login_status', 'hall', 'enter');
 			client.on('hall', 'welcome', 'hall', 'play');
 			client.on('hall', 'party_invite', 'hall', 'accept_invite');
+			client.on('game', 'member_turning', 'game', 'turn', {'type': 'cards_enough'})
 			client.init();
 		</script>
 	</head>

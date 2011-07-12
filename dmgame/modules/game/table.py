@@ -8,7 +8,9 @@ from random import choice
 
 from dmgame.messages.dispatcher import player_dispatcher 
 import dmgame.messages.messages as messages
+import dmgame.modules.game.errors as errors
 import dmgame.packets.incoming.game as incoming
+import dmgame.packets.outcoming.game as outcoming
 from dmgame.utils.log import get_logger
 logger = get_logger(__name__)
 
@@ -34,14 +36,17 @@ class PlayerTurn(object):
     Ход игрока.
     '''
 
-    def __init__(self, player, turn_data):
+    def __init__(self, member, turn_data):
         '''
-        @param player: Player
+        @param member: TableMember
         @param turn_data: dict
         '''
-        self.player = player
+        self.member = member
         self._handle_turn_data(turn_data)
         self._check()
+        
+    def __str__(self):
+        return '<%s>'%type(self).__name__
     
     def _handle_turn_data(self, turn_data):
         '''
@@ -89,11 +94,22 @@ class GamblingTable(object):
         for player in party:
             members[player] = member_class(player)
         return members
+    
+    def _send_game_started_message(self):
+        '''
+        Рассылает сообщение, что игра началась.
+        '''
+        members = self._members.values()
+        for member in members:
+            packet = outcoming.GameStartedPacket(member, members)
+            message = messages.PlayerResponseMessage(member.player, packet)
+            player_dispatcher.dispatch(message)
 
     def _start(self):
         '''
         Начинает игру.
         '''
+        self._send_game_started_message()
         self._on_start()
     
     def _end(self):
@@ -112,6 +128,16 @@ class GamblingTable(object):
                 return member
         return None
     
+    def _send_member_turning_message(self, member_turning):
+        '''
+        Рассылает сообщение, что игрок теперь ходит.
+        @param member_turning: TableMember
+        '''
+        for member in self._members.values():
+            packet = outcoming.MemberTurningPacket(member_turning)
+            message = messages.PlayerResponseMessage(member.player, packet)
+            player_dispatcher.dispatch(message)
+    
     def _set_member_turning(self, member):
         '''
         Делает игрока ходящим.
@@ -124,6 +150,7 @@ class GamblingTable(object):
         else:
             current.is_turning = False
         member.is_turning = True
+        self._send_member_turning_message(member)
         
     def _set_random_member_turning(self):
         '''
@@ -136,14 +163,14 @@ class GamblingTable(object):
         '''
         Передает ход следующему игроку.
         '''
-        members = self._members
+        members = self._members.values()
         current = self._get_current_turning_member()
         current_index = members.index(current)
         if current_index == len(members) - 1:
             next = 0
         else:
             next = current_index + 1
-        self._set_next_member_turning(members[next])
+        self._set_member_turning(members[next])
     
     def _set_member_result(self, member, result):
         '''
@@ -152,13 +179,28 @@ class GamblingTable(object):
         '''
         logger.debug('player %s has now result %s'%(member, result))
         
-    def _get_turn_object(self, turn_data):
+    def _get_turn_class(self, turn_type):
         '''
-        Возвращает объект хода.
-        @param turn_data: dict
+        Возвращает класс хода.
+        @param turn_type: string
         @return: PlayerTurn
         '''
         raise NotImplementedError()
+    
+    def _get_turn_object(self, member, turn_data):
+        '''
+        Возвращает объект хода.
+        @param member: TableMember
+        @param turn_data: dict
+        @return: PlayerTurn
+        '''
+        if 'type' not in turn_data:
+            raise errors.BadTurnDataError('turn data must contain "type" field')
+        turn_type = turn_data['type']
+        turn_class = self._get_turn_class(turn_type)
+        if turn_class is None:
+            raise errors.BadTurnDataError('unknown turn type "%s"'%turn_type)
+        return turn_class(member, turn_data)
 
     def _handle_player_turn(self, message):
         '''
@@ -169,8 +211,14 @@ class GamblingTable(object):
         if player in self._members:
             member = self._members[player]
             if member.is_turning:
-                turn = self._get_turn_object(message.turn)
+                turn = self._get_turn_object(member, message.packet.data)
+                logger.debug('player %s made a turn %s'%(member, turn))
                 self._on_member_turn(member, turn)
+            else:
+                logger.debug('player %s is not turning now'%member)
+        else:
+            logger.debug('player %s not in members, skipping'%player)
+            logger.debug('members are %s'%', '.join(map(str, self._members.keys())))
             
     def _handle_player_leave(self, message):
         '''
@@ -179,7 +227,7 @@ class GamblingTable(object):
         '''
         player = message.player
         if player in self._members:
-            self._on_player_leave(self._members[player])
+            self._on_member_leave(self._members[player])
         
     def _subscribe(self):
         '''
