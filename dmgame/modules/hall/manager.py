@@ -19,7 +19,23 @@ class MessageResender(object):
     '''
     
     def __init__(self):
+        self._players = {}
         self._subscribe()
+
+    def _get_player(self, user, connection_id):
+        '''
+        Ищет игрока в коллекции. Если его там нет, создает нового и добавляет.
+        @param user: User
+        @param connection_id: int
+        @return: Player
+        '''
+        player = Player(user, connection_id)
+        key = str(player)
+        if key in self._players:
+            player = self._players[key]
+        else:
+            self._players[key] = player
+        return player
 
     def _on_user_request(self, message):
         '''
@@ -27,7 +43,7 @@ class MessageResender(object):
         @param message: UserRequestMessage
         '''
         logger.debug('sending player request message')
-        player = Player(message.user, message.connection_id)
+        player = self._get_player(message.user, message.connection_id)
         new_message = messages.PlayerRequestMessage(player, message.packet)
         player_dispatcher.dispatch(new_message)
         
@@ -37,9 +53,10 @@ class MessageResender(object):
         @param message: UserDisconnectedMessage
         '''
         logger.debug('sending player disconnected message')
-        player = Player(message.user, message.connection_id)
+        player = self._get_player(message.user, message.connection_id)
         new_message = messages.PlayerDisconnectedMessage(player)
         player_dispatcher.dispatch(new_message)
+        del self._players[str(player)]
         
     def _on_player_response(self, message):
         '''
