@@ -8,10 +8,26 @@ from random import choice
 
 from dmgame.messages.dispatcher import player_dispatcher 
 import dmgame.messages.messages as messages
-import dmgame.modules.game.errors as errors
 import dmgame.packets.incoming.game as incoming
 from dmgame.utils.log import get_logger
 logger = get_logger(__name__)
+
+class TableMember(object):
+    '''
+    Член игрового стола.
+    '''
+    
+    def __init__(self, player):
+        '''
+        @param player: Player
+        '''
+        self.player = player
+        self.is_turning = False
+        self.is_turning_first = False
+        
+    def __str__(self):
+        return str(self.player)
+
 
 class PlayerTurn(object):
     '''
@@ -51,11 +67,28 @@ class GamblingTable(object):
         '''
         @param party: PlayersParty
         '''
-        self._party = party
-        self._first_turning_player = None
-        self._turning_player = None
+        self._members = self._get_table_members(party)
         self._subscribe()
         self._start()
+        
+    def _get_member_class(self):
+        '''
+        Возвращает класс члена игрового стола.
+        @return: TableMember
+        '''
+        return TableMember
+    
+    def _get_table_members(self, party):
+        '''
+        Выбирает игроков из группы.
+        @param party: PlayersParty
+        @return: dict
+        '''
+        member_class = self._get_member_class()
+        members = {}
+        for player in party.players:
+            members[player] = member_class(player)
+        return members
 
     def _start(self):
         '''
@@ -68,42 +101,56 @@ class GamblingTable(object):
         Заканчивает игру.
         '''
         self._on_end()
+        
+    def _get_current_turning_member(self):
+        '''
+        Возвращает игрока, ходящего в данный момент.
+        @return: TableMember
+        '''
+        for member in self._members.values():
+            if member.is_turning:
+                return member
+        return None
     
-    def _set_player_turning(self, player):
+    def _set_member_turning(self, member):
         '''
         Делает игрока ходящим.
-        @param player: Player
+        @param member: TableMember
         '''
-        logger.debug('player %s turning now'%player)
-        if self._first_turning_player is None:
-            self._first_turning_player = player
-        self._turning_player = player
+        logger.debug('member %s turning now'%member)
+        current = self._get_current_turning_member()
+        if current is None:
+            member.is_turning_first = True
+        else:
+            current.is_turning = False
+        member.is_turning = True
         
-    def _set_random_player_turning(self):
+    def _set_random_member_turning(self):
         '''
         Делает случайного игрока ходящим.
         '''
-        player = choice(self._party.players)
-        self._set_player_turning(player)
+        member = choice(self._members.values())
+        self._set_member_turning(member)
         
-    def _set_next_player_turning(self):
+    def _set_next_member_turning(self):
         '''
         Передает ход следующему игроку.
         '''
-        players = self._party.players
-        current = players.index(self._turning_player)
-        if current == len(players) - 1:
+        members = self._members
+        current = self._get_current_turning_member()
+        current_index = members.index(current)
+        if current_index == len(members) - 1:
             next = 0
         else:
-            next = current + 1
-        self._set_next_player_turning(players[next])
+            next = current_index + 1
+        self._set_next_member_turning(members[next])
     
-    def _set_player_result(self, player, result):
+    def _set_member_result(self, member, result):
         '''
         Устанавливает для игрока результат (выиграл/проиграл).
-        @param player: Player
+        @param member: TableMember
         '''
-        logger.debug('player %s has now result %s'%(player, result))
+        logger.debug('player %s has now result %s'%(member, result))
         
     def _get_turn_object(self, turn_data):
         '''
@@ -119,16 +166,20 @@ class GamblingTable(object):
         @param message: PlayerRequestMessage
         '''
         player = message.player
-        if player == self._turning_player:
-            turn = self._get_turn_object(message.turn)
-            self._on_player_turn(player, turn)
+        if player in self._members:
+            member = self._members[player]
+            if member.is_turning:
+                turn = self._get_turn_object(message.turn)
+                self._on_member_turn(member, turn)
             
     def _handle_player_leave(self, message):
         '''
         Обрабатывает выход игрока.
         @param message: PlayerDisconnectedMessage
         '''
-        self._on_player_leave(message.player)
+        player = message.player
+        if player in self._members:
+            self._on_player_leave(self._members[player])
         
     def _subscribe(self):
         '''
@@ -155,17 +206,17 @@ class GamblingTable(object):
         Вызывается при окончании игры.
         '''
         
-    def _on_player_turn(self, player, turn):
+    def _on_member_turn(self, member, turn):
         '''
         Выполняется, когда игрок ходит.
-        @param player: Player
+        @param member: TableMember
         @param turn: dict
         '''
-        logger.debug('player %s has made a turn %s'%(player, turn))
+        logger.debug('player %s has made a turn %s'%(member, turn))
 
-    def _on_player_leave(self, leaver):
+    def _on_member_leave(self, member):
         '''
         Выполняется, когда игрок уходит.
-        @param leaver: Player
+        @param member: TableMember
         '''
-        logger.debug('player %s has left'%leaver)
+        logger.debug('player %s has left'%member)

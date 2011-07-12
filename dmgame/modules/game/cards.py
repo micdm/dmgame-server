@@ -6,7 +6,7 @@
 
 from random import shuffle
 
-from dmgame.modules.game.table import GamblingTable
+from dmgame.modules.game.table import GamblingTable, TableMember
 from dmgame.utils.log import get_logger
 logger = get_logger(__name__)
 
@@ -114,10 +114,17 @@ class CardDeck(object):
         return cards
 
 
-class PlayerHand(CardSet):
+class MemberHand(CardSet):
     '''
     Карты игрока.
     '''
+    
+    
+class CardTableMember(TableMember):
+    
+    def __init__(self, player):
+        super(CardTableMember, self).__init__(player)
+        self.hand = MemberHand()
 
 
 class CardGamblingTable(GamblingTable):
@@ -129,6 +136,9 @@ class CardGamblingTable(GamblingTable):
         self._deck = None
         self._hands = {}
         super(CardGamblingTable, self).__init__(*args, **kwargs)
+        
+    def _get_member_class(self):
+        return CardTableMember
 
     def _create_deck(self, type, count):
         '''
@@ -138,17 +148,15 @@ class CardGamblingTable(GamblingTable):
         '''
         self._deck = CardDeck(type, count)
         
-    def _give_cards_to_player(self, player, count):
+    def _give_cards_to_member(self, member, count):
         '''
         Выдает карты игроку.
-        @param player: Player
+        @param member: CardTableMember
         @param count: int
         '''
-        if player not in self._hands:
-            self._hands[player] = PlayerHand()
         cards = self._deck.get_cards(count)
-        logger.debug('giving cards %s to player %s'%(cards, player))
-        self._hands[player].extend(cards)
+        logger.debug('giving cards %s to player %s'%(cards, member))
+        member.hand.extend(cards)
         
     def _open_all_cards(self):
         '''
