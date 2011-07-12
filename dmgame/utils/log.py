@@ -33,6 +33,8 @@ def _need_enable_logger(name):
     @param name: string
     @return: bool
     '''
+    if ENABLE_LOGGING_FOR is None:
+        return True
     for module in ENABLE_LOGGING_FOR:
         if name.startswith(module):
             return True
