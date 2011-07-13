@@ -51,3 +51,29 @@ class MemberTurningPacket(GamePacket):
 
     def _get_data(self):
         return {'member': self.member.player.connection_id}
+
+
+class GivingCardsPacket(GamePacket):
+    '''
+    Выдача карт игроку.
+    '''
+    
+    type = 'giving_cards'
+    
+    def __init__(self, member, cards=None, count=None):
+        '''
+        @param member: TableMember
+        @param cards: CardSet
+        @param count: int
+        '''
+        self.member = member
+        self.cards = cards
+        self.count = count
+        
+    def _get_data(self):
+        result = {'member': self.member.player.connection_id}
+        if self.cards is not None:
+            result['cards'] = [card.as_dict() for card in self.cards]
+        if self.count is not None:
+            result['count'] = self.count
+        return result

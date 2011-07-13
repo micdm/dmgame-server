@@ -7,6 +7,7 @@
 from random import shuffle
 
 from dmgame.modules.game.table import GamblingTable, TableMember as BaseTableMember
+import dmgame.packets.outcoming.game as outcoming
 from dmgame.utils.log import get_logger
 logger = get_logger(__name__)
 
@@ -47,6 +48,13 @@ class Card(object):
         
     def __str__(self):
         return '%s%s'%(self.suit, self._get_rang_as_string())
+    
+    def as_dict(self):
+        '''
+        Возвращает карту как словарь.
+        @return: dict
+        '''
+        return {'suit': self.suit, 'rang': self.rang}
     
     def is_jack(self):
         '''
@@ -183,6 +191,19 @@ class CardGamblingTable(GamblingTable):
         '''
         self._deck = CardDeck(type, count)
         
+    def _send_giving_cards_message(self, recipient, cards):
+        '''
+        Рассылает сообщение о получении игроком карт.
+        @param recipient: TableMember
+        @param cards: CardSet
+        '''
+        for member in self._members.values():
+            if member == recipient:
+                packet = outcoming.GivingCardsPacket(recipient, cards=cards)
+            else:
+                packet = outcoming.GivingCardsPacket(recipient, count=len(cards))
+            self._send_to_member(member, packet)
+        
     def _give_cards_to_member(self, member, count):
         '''
         Выдает карты игроку.
@@ -192,6 +213,7 @@ class CardGamblingTable(GamblingTable):
         cards = self._deck.get_cards(count)
         logger.debug('giving cards %s to player %s'%(cards, member))
         member.hand.extend(cards)
+        self._send_giving_cards_message(member, cards)
         
     def _open_all_cards(self):
         '''
