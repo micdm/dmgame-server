@@ -6,7 +6,7 @@
 
 from dmgame.messages.dispatcher import player_dispatcher 
 import dmgame.messages.messages as messages
-import dmgame.modules.game.tables.a_la_21 as a_la_21
+import dmgame.games.a_la_21.table as a_la_21
 from dmgame.utils.log import get_logger
 logger = get_logger(__name__)
 
