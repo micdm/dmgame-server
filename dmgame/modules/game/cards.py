@@ -21,68 +21,68 @@ class Card(object):
     SUIT_CLUBS = '♣'
     SUIT_SPADES = '♠'
     
-    RANG_TWO = 2
-    RANG_SIX = 6
-    RANG_JACK = 11
-    RANG_QUEEN = RANG_JACK + 1
-    RANG_KING = RANG_QUEEN + 1
-    RANG_ACE = RANG_KING + 1
+    RANK_TWO = 2
+    RANK_SIX = 6
+    RANK_JACK = 11
+    RANK_QUEEN = RANK_JACK + 1
+    RANK_KING = RANK_QUEEN + 1
+    RANK_ACE = RANK_KING + 1
 
-    def __init__(self, suit, rang):
+    def __init__(self, suit, rank):
         '''
         @param suit: string
-        @param rang: string
+        @param rank: string
         '''
         self.suit = suit
-        self.rang = rang
+        self.rank = rank
         
-    def _get_rang_as_string(self):
+    def _get_rank_as_string(self):
         '''
         Возвращает ранг как строку.
         @return: string
         '''
-        rangs = {self.RANG_JACK: 'J', self.RANG_QUEEN: 'Q', self.RANG_KING: 'K', self.RANG_ACE: 'A'}
-        if self.rang in rangs:
-            return rangs[self.rang]
-        return self.rang
+        ranks = {self.RANK_JACK: 'J', self.RANK_QUEEN: 'Q', self.RANK_KING: 'K', self.RANK_ACE: 'A'}
+        if self.rank in ranks:
+            return ranks[self.rank]
+        return self.rank
         
     def __str__(self):
-        return '%s%s'%(self.suit, self._get_rang_as_string())
+        return '%s%s'%(self.suit, self._get_rank_as_string())
     
     def as_dict(self):
         '''
         Возвращает карту как словарь.
         @return: dict
         '''
-        return {'suit': self.suit, 'rang': self.rang}
+        return {'suit': self.suit, 'rank': self.rank}
     
     def is_jack(self):
         '''
         Валет?
         @return: bool
         '''
-        return self.rang == self.RANG_JACK
+        return self.rank == self.RANK_JACK
     
     def is_queen(self):
         '''
         Дама?
         @return: bool
         '''
-        return self.rang == self.RANG_QUEEN
+        return self.rank == self.RANK_QUEEN
     
     def is_king(self):
         '''
         Король?
         @return: bool
         '''
-        return self.rang == self.RANG_KING
+        return self.rank == self.RANK_KING
     
     def is_ace(self):
         '''
         Туз?
         @return: bool
         '''
-        return self.rang == self.RANG_ACE
+        return self.rank == self.RANK_ACE
     
     
 class CardSet(list):
@@ -118,9 +118,9 @@ class CardDeck(object):
         @return: CardSet
         '''
         if type == self.TYPE_36:
-            return CardSet(Card(suit, rang) for rang in range(Card.RANG_SIX, Card.RANG_ACE + 1))
+            return CardSet(Card(suit, rank) for rank in range(Card.RANK_SIX, Card.RANK_ACE + 1))
         if type == self.TYPE_52:
-            return CardSet(Card(suit, rang) for rang in range(Card.RANG_TWO, Card.RANG_ACE + 1))
+            return CardSet(Card(suit, rank) for rank in range(Card.RANK_TWO, Card.RANK_ACE + 1))
         
     def _get_one_deck(self, type):
         '''

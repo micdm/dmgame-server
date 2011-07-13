@@ -27,7 +27,7 @@ class TableMember(BaseTableMember):
             return 4
         if card.is_ace():
             return 11
-        return card.rang
+        return card.rank
 
     def get_hand_value(self):
         '''
