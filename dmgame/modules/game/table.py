@@ -19,10 +19,12 @@ class TableMember(object):
     Член игрового стола.
     '''
     
-    def __init__(self, player):
+    def __init__(self, number, player):
         '''
+        @param number: int
         @param player: Player
         '''
+        self.number = number
         self.player = player
         self.is_turning = False
         self.is_turning_first = False
@@ -97,8 +99,8 @@ class GamblingTable(object):
         '''
         member_class = self._get_member_class()
         members = {}
-        for player in party:
-            members[player] = member_class(player)
+        for number, player in zip(range(len(party)), party):
+            members[player] = member_class(number, player)
         return members
     
     def _send_to_member(self, member, packet):

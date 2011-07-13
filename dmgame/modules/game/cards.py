@@ -165,8 +165,8 @@ class MemberHand(CardSet):
     
 class TableMember(BaseTableMember):
     
-    def __init__(self, player):
-        super(TableMember, self).__init__(player)
+    def __init__(self, *args, **kwargs):
+        super(TableMember, self).__init__(*args, **kwargs)
         self.hand = MemberHand()
 
 

@@ -31,8 +31,8 @@ class GameStartedPacket(GamePacket):
 
     def _get_data(self):
         return {
-            'id': self.member.player.connection_id,
-            'members': [member.player.connection_id for member in self.all_members]
+            'id': self.member.number,
+            'members': [member.number for member in self.all_members]
         }
 
 
@@ -50,7 +50,7 @@ class MemberTurningPacket(GamePacket):
         self.member = member
 
     def _get_data(self):
-        return {'member': self.member.player.connection_id}
+        return {'member': self.member.number}
 
 
 class GivingCardsPacket(GamePacket):
@@ -71,7 +71,7 @@ class GivingCardsPacket(GamePacket):
         self.count = count
         
     def _get_data(self):
-        result = {'member': self.member.player.connection_id}
+        result = {'member': self.member.number}
         if self.cards is not None:
             result['cards'] = [card.as_dict() for card in self.cards]
         if self.count is not None:
@@ -96,6 +96,6 @@ class OpeningCardsPacket(GamePacket):
         result = []
         for member in self.members:
             cards = [card.as_dict() for card in member.hand]
-            info = {'id': member.player.connection_id, 'cards': cards}
+            info = {'id': member.number, 'cards': cards}
             result.append(info)
         return result
