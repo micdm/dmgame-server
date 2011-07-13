@@ -40,6 +40,9 @@ class PlayersParty(list):
     '''
     Компания игроков.
     '''
+    
+    # Время до роспуска после сформирования (в секундах):
+    DISMISS_TIME = 5
 
     def __init__(self, players):
         '''
@@ -124,7 +127,7 @@ class PlayersParty(list):
         Запускает таймер, по истечении которого группа будет распущена.
         '''
         logger.debug('starting party timer')
-        self._timer = Timer(5, self._dismiss)
+        self._timer = Timer(self.DISMISS_TIME, self._dismiss)
         self._timer.start()
         
     def _stop_timer(self):
@@ -143,6 +146,6 @@ class PlayersParty(list):
         Рассылает приглашения игрокам начать игру.
         '''
         for player in self:
-            packet = outcoming.PartyInvitePacket()
+            packet = outcoming.PartyInvitePacket(self.DISMISS_TIME)
             message = messages.PlayerResponseMessage(player, packet)
             player_dispatcher.dispatch(message)

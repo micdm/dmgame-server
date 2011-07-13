@@ -51,6 +51,21 @@ class MemberTurningPacket(GamePacket):
 
     def _get_data(self):
         return {'member': self.member.number}
+    
+    
+class ResultsAvailablePacket(GamePacket):
+    '''
+    Доступны результаты игры.
+    '''
+    
+    def __init__(self, members):
+        '''
+        @param members: list
+        '''
+        self.members = members
+        
+    def _get_data(self):
+        return [{'id': member.number, 'result': member.result} for member in self.members]
 
 
 class GivingCardsPacket(GamePacket):
