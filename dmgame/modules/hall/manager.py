@@ -29,12 +29,11 @@ class MessageResender(object):
         @param connection_id: int
         @return: Player
         '''
-        player = Player(user, connection_id)
-        key = str(player)
-        if key in self._players:
-            player = self._players[key]
+        if connection_id in self._players:
+            player = self._players[connection_id]
         else:
-            self._players[key] = player
+            player = Player(user, connection_id)
+            self._players[connection_id] = player
         return player
 
     def _on_user_request(self, message):
@@ -56,7 +55,7 @@ class MessageResender(object):
         player = self._get_player(message.user, message.connection_id)
         new_message = messages.PlayerDisconnectedMessage(player)
         player_dispatcher.dispatch(new_message)
-        del self._players[str(player)]
+        del self._players[player.connection_id]
         
     def _on_player_response(self, message):
         '''
