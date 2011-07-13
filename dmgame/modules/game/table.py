@@ -95,6 +95,23 @@ class GamblingTable(object):
             members[player] = member_class(player)
         return members
     
+    def _send_to_member(self, member, packet):
+        '''
+        Отправляет сообщение конкретному игроку.
+        @param member: TableMember
+        @param packet: OutcomingPacket
+        '''
+        message = messages.PlayerResponseMessage(member.player, packet)
+        player_dispatcher.dispatch(message)
+        
+    def _send_to_all(self, packet):
+        '''
+        Рассылает сообщение всем.
+        @param packet: OutcomingPacket
+        '''
+        for member in self._members.values():
+            self._send_to_member(member, packet)
+    
     def _send_game_started_message(self):
         '''
         Рассылает сообщение, что игра началась.
@@ -102,8 +119,7 @@ class GamblingTable(object):
         members = self._members.values()
         for member in members:
             packet = outcoming.GameStartedPacket(member, members)
-            message = messages.PlayerResponseMessage(member.player, packet)
-            player_dispatcher.dispatch(message)
+            self._send_to_member(member, packet)
 
     def _start(self):
         '''
@@ -133,10 +149,8 @@ class GamblingTable(object):
         Рассылает сообщение, что игрок теперь ходит.
         @param member_turning: TableMember
         '''
-        for member in self._members.values():
-            packet = outcoming.MemberTurningPacket(member_turning)
-            message = messages.PlayerResponseMessage(member.player, packet)
-            player_dispatcher.dispatch(message)
+        packet = outcoming.MemberTurningPacket(member_turning)
+        self._send_to_all(packet)
     
     def _set_member_turning(self, member):
         '''

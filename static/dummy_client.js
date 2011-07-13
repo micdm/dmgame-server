@@ -31,7 +31,7 @@ function dummyClient(swf_location, server) {
 		if (msg) {
 			console.log('sending message');
 			ws.send($.toJSON(msg));
-			delete evented_queue[event];
+			//delete evented_queue[event];
 		}
 	}
 	
