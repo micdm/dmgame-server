@@ -22,8 +22,8 @@ class Converter(object):
         '''
         try:
             return json_encode(packet.get_dict())
-        except:
-            logger.debug('can not serialize packet to text')
+        except Exception as e:
+            logger.debug('can not serialize packet to text: %s'%e)
             return None
     
     @classmethod

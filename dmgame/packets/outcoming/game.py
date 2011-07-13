@@ -77,3 +77,25 @@ class GivingCardsPacket(GamePacket):
         if self.count is not None:
             result['count'] = self.count
         return result
+    
+    
+class OpeningCardsPacket(GamePacket):
+    '''
+    Раскрытие карт всех игроков.
+    '''
+    
+    type = 'opening_cards'
+    
+    def __init__(self, members):
+        '''
+        @param members: list
+        '''
+        self.members = members
+        
+    def _get_data(self):
+        result = []
+        for member in self.members:
+            cards = [card.as_dict() for card in member.hand]
+            info = {'id': member.player.connection_id, 'cards': cards}
+            result.append(info)
+        return result

@@ -219,4 +219,5 @@ class CardGamblingTable(GamblingTable):
         '''
         Открывает карты всех игроков.
         '''
-        # TODO: разослать всем событие открыть карты
+        packet = outcoming.OpeningCardsPacket(self._members.values())
+        self._send_to_all(packet)
