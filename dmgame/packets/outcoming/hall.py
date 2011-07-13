@@ -43,6 +43,15 @@ class PartyInvitePacket(HallPacket):
     '''
 
     type = 'party_invite'
+    
+    def __init__(self, dismiss_time):
+        '''
+        @param dismiss_time: int
+        '''
+        self.dismiss_time = dismiss_time
+        
+    def _get_data(self):
+        return {'dismiss_time': self.dismiss_time}
 
 
 class PartyMemberReadyPacket(HallPacket):

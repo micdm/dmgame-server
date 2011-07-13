@@ -84,8 +84,8 @@ class GamblingTable(CardGamblingTable):
         value = member.get_hand_value()
         logger.debug('member %s has value %s for hand %s'%(member, value, member.hand))
         if value == max_value:
-            return self.PLAYER_RESULT_WIN
-        return self.PLAYER_RESULT_DEFEAT
+            return self._results.RESULT_WIN
+        return self._results.RESULT_DEFEAT
 
     def _on_start(self):
         '''
@@ -104,7 +104,7 @@ class GamblingTable(CardGamblingTable):
         max_value = self._get_max_value()
         for member in self._members.values():
             result = self._get_member_result(max_value, member)
-            self._set_member_result(member, result)
+            self._results.set_member_result(member, result)
 
     def _on_member_turn(self, member, turn):
         '''

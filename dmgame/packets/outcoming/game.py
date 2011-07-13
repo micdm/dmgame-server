@@ -58,6 +58,8 @@ class ResultsAvailablePacket(GamePacket):
     Доступны результаты игры.
     '''
     
+    type = 'results_available'
+    
     def __init__(self, members):
         '''
         @param members: list

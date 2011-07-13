@@ -28,6 +28,7 @@ class TableMember(object):
         self.player = player
         self.is_turning = False
         self.is_turning_first = False
+        self.result = None
         
     def __str__(self):
         return str(self.player)
@@ -66,21 +67,65 @@ class PlayerTurn(object):
         '''
         Проверяет полученный объект.
         '''
+        
+        
+class GameResults(object):
+    '''
+    Результаты игры.
+    '''
+
+    RESULT_DEFEAT = 'defeat'
+    RESULT_WIN = 'win'
+
+    def __init__(self, members):
+        '''
+        @param members: list
+        '''
+        self._members = members
+        
+    def _are_all_results_set(self):
+        '''
+        Установлены ли результаты для всех игроков?
+        @return: bool
+        '''
+        for member in self._members.values():
+            if member.result is None:
+                return False
+        return True
+    
+    def _send_results_message(self):
+        '''
+        Рассылает сообщение о результатах.
+        '''
+        members = self._members.values()
+        for member in members:
+            packet = outcoming.ResultsAvailablePacket(members)
+            message = messages.PlayerResponseMessage(member.player, packet)
+            player_dispatcher.dispatch(message)
+
+    def set_member_result(self, member, result):
+        '''
+        Устанавливает для игрока результат (выиграл/проиграл).
+        @param member: TableMember
+        @param result: string
+        '''
+        logger.debug('player %s has now result "%s"'%(member, result))
+        member.result = result
+        if self._are_all_results_set():
+            self._send_results_message()
 
 
 class GamblingTable(object):
     '''
     Абстрактный игровой стол.
     '''
-    
-    PLAYER_RESULT_DEFEAT = 0
-    PLAYER_RESULT_WIN = 1
 
     def __init__(self, party):
         '''
         @param party: PlayersParty
         '''
         self._members = self._get_table_members(party)
+        self._results = GameResults(self._members)
         self._subscribe()
         self._start()
         
@@ -193,14 +238,7 @@ class GamblingTable(object):
         else:
             next = current_index + 1
         self._set_member_turning(members[next])
-    
-    def _set_member_result(self, member, result):
-        '''
-        Устанавливает для игрока результат (выиграл/проиграл).
-        @param member: TableMember
-        '''
-        logger.debug('player %s has now result %s'%(member, result))
-        
+
     def _get_turn_class(self, turn_type):
         '''
         Возвращает класс хода.
