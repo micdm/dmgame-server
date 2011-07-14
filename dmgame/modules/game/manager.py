@@ -6,13 +6,13 @@
 
 from dmgame.messages.dispatcher import player_dispatcher 
 import dmgame.messages.messages as messages
-import dmgame.games.a_la_21 as a_la_21
+import dmgame.games.a_la_21.table as a_la_21
 from dmgame.utils.log import get_logger
 logger = get_logger(__name__)
 
 class GameManager(object):
     '''
-    Упраление игровыми столами.
+    Управление игровыми столами.
     '''
 
     def __init__(self):
