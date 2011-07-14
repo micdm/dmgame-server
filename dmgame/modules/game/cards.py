@@ -214,6 +214,7 @@ class CardGamblingTable(GamblingTable):
         logger.debug('giving cards %s to player %s'%(cards, member))
         member.hand.extend(cards)
         self._send_giving_cards_message(member, cards)
+        self._on_give_cards_to_member(member, cards)
         
     def _open_all_cards(self):
         '''
@@ -221,3 +222,16 @@ class CardGamblingTable(GamblingTable):
         '''
         packet = outcoming.OpeningCardsPacket(self._members.values())
         self._send_to_all(packet)
+        self._on_open_all_cards()
+        
+    def _on_give_cards_to_member(self, member, cards):
+        '''
+        Выполняется при выдаче карт игроку.
+        @param member: TableMember
+        @param cards: CardSet
+        '''
+
+    def _on_open_all_cards(self):
+        '''
+        Выполняется при открытии всех карт.
+        '''

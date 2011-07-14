@@ -98,8 +98,8 @@ class GameResults(object):
         Рассылает сообщение о результатах.
         '''
         members = self._members.values()
+        packet = outcoming.ResultsAvailablePacket(members)
         for member in members:
-            packet = outcoming.ResultsAvailablePacket(members)
             message = messages.PlayerResponseMessage(member.player, packet)
             player_dispatcher.dispatch(message)
 

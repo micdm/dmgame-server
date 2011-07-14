@@ -97,6 +97,7 @@ class Server(object):
         on_packet = partial(self._parse_packet, self._next_handler_id)
         on_close = partial(self._close_handler, self._next_handler_id)
         handler = Handler(on_packet, on_close, *args, **kwargs)
+        # TODO: ограничить количество одновременных соединений.
         self._handlers[self._next_handler_id] = handler
         self._next_handler_id += 1
         return handler
