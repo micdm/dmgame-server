@@ -122,7 +122,7 @@ class GamblingTable(CardGamblingTable):
             else:
                 self._end()
 
-    def _on_member_leave(self, member_left):
+    def _on_member_leaving(self, member_leaving):
         '''
         Если один игрок уходит, заканчиваем игру.
         '''

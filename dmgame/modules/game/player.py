@@ -75,6 +75,14 @@ class PlayersParty(list):
         self._unsubscribe()
         self._stop_timer()
         self._set_players_party_flag(False)
+        
+    def _set_players_party_flag(self, value):
+        '''
+        Выставляет игрокам флажки, что они сейчас в группе (либо уже нет).
+        @param value: bool
+        '''
+        for player in self:
+            player.is_in_party = value
 
     def _send_dismiss_message_to_players(self):
         '''

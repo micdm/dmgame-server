@@ -302,14 +302,14 @@ class GamblingTable(object):
         logger.debug('player %s made a turn %s'%(member, turn))
         self._on_member_turn(member, turn)
         
-    def _send_member_leave_packet(self, member_left):
+    def _send_member_leaving_packet(self, member_leaving):
         '''
         Рассылает сообщение, что игрок вышел из игры.
         @param member_left: TableMember
         '''
-        packet = outcoming.MemberLeavingPacket(member_left)
+        packet = outcoming.MemberLeavingPacket(member_leaving)
         for member in self._members.values():
-            if member != member_left:
+            if member != member_leaving:
                 self._send_to_member(member, packet)
 
     def _handle_player_leave(self, message):
@@ -320,8 +320,8 @@ class GamblingTable(object):
         player = message.player
         if player in self._members:
             member = self._members[player]
-            self._send_member_leave_packet(member)
-            self._on_member_leave(member)
+            self._send_member_leaving_packet(member)
+            self._on_member_leaving(member)
         
     def _subscribe(self):
         '''
@@ -356,9 +356,9 @@ class GamblingTable(object):
         '''
         logger.debug('player %s has made a turn %s'%(member, turn))
 
-    def _on_member_leave(self, member):
+    def _on_member_leaving(self, member_leaving):
         '''
         Выполняется, когда игрок уходит.
         @param member: TableMember
         '''
-        logger.debug('player %s has left'%member)
+        logger.debug('player %s has left'%member_leaving)
