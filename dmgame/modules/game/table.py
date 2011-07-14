@@ -79,7 +79,7 @@ class GameResults(object):
 
     def __init__(self, members):
         '''
-        @param members: list
+        @param members: dict
         '''
         self._members = members
         
@@ -126,6 +126,7 @@ class GamblingTable(object):
         '''
         self._members = self._get_table_members(party)
         self._results = GameResults(self._members)
+        self._is_ended = False
         self._subscribe()
         self._start()
         
@@ -185,6 +186,8 @@ class GamblingTable(object):
         '''
         Заканчивает игру.
         '''
+        self._is_ended = True
+        self._unsubscribe()
         self._on_end()
         
     def _get_current_turning_member(self):
@@ -267,19 +270,20 @@ class GamblingTable(object):
         Обрабатывает ход игрока.
         @param message: PlayerRequestMessage
         '''
+        if self._is_ended:
+            return
         player = message.player
-        if player in self._members:
-            member = self._members[player]
-            if member.is_turning:
-                turn = self._get_turn_object(member, message.packet.data)
-                logger.debug('player %s made a turn %s'%(member, turn))
-                self._on_member_turn(member, turn)
-            else:
-                logger.debug('player %s is not turning now'%member)
-        else:
+        if player not in self._members:
             logger.debug('player %s not in members, skipping'%player)
-            logger.debug('members are %s'%', '.join(map(str, self._members.keys())))
-            
+            return
+        member = self._members[player]
+        if not member.is_turning:
+            logger.debug('player %s is not turning now'%member)
+            return
+        turn = self._get_turn_object(member, message.packet.data)
+        logger.debug('player %s made a turn %s'%(member, turn))
+        self._on_member_turn(member, turn)
+
     def _handle_player_leave(self, message):
         '''
         Обрабатывает выход игрока.

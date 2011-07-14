@@ -117,13 +117,12 @@ class Server(object):
         Выполняется при появлении исходящего сообщения.
         @param message: ClientResponseMessage
         '''
+        handler_id = message.connection_id
         packet = message.packet
-        logger.debug('sending packet %s'%packet)
+        logger.debug('sending packet %s to handler #%s'%(packet, handler_id))
         text = Converter.serialize(packet)
-        if text is not None:
-            handler_id = message.connection_id
-            if handler_id in self._handlers:
-                self._handlers[handler_id].write_message(text)
+        if text is not None and handler_id in self._handlers:
+            self._handlers[handler_id].write_message(text)
         
     def _init_subscription(self):
         '''
