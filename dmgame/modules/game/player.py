@@ -25,6 +25,8 @@ class Player(object):
         '''
         self.user = user
         self.connection_id = connection_id
+        self.is_in_party = False
+        self.is_in_game = False
         
     def __eq__(self, other):
         return self.user == other.user and self.connection_id == other.connection_id
@@ -33,7 +35,14 @@ class Player(object):
         return not self.__eq__(other)
     
     def __str__(self):
-        return '<%s:%s>'%(self.user, self.connection_id)
+        return '<Player #%s>'%self.connection_id
+    
+    def can_enter_hall(self):
+        '''
+        Может ли игрок войти в игровой зал?
+        @return: bool
+        '''
+        return not self.is_in_party and not self.is_in_game
 
 
 class PlayersParty(list):
@@ -52,12 +61,21 @@ class PlayersParty(list):
         self.extend(players)
         self._ready = []
         self._timer = None
+        self._set_players_party_flag(True)
         self._subscribe()
         self._start_timer()
 
     def __str__(self):
         return '<party of %s>'%len(self)
     
+    def _deinit(self):
+        '''
+        Деинициализирует группу.
+        '''
+        self._unsubscribe()
+        self._stop_timer()
+        self._set_players_party_flag(False)
+
     def _send_dismiss_message_to_players(self):
         '''
         Рассылает участникам сообщение о роспуске группы.
@@ -79,11 +97,10 @@ class PlayersParty(list):
         Распускает группу.
         '''
         logger.debug('dismissing party')
-        self._unsubscribe()
-        self._stop_timer()
         self._send_dismiss_message_to_players()
         self._send_dismiss_message()
-    
+        self._deinit()
+
     def _on_player_accepted(self, message):
         '''
         Выполняется при подтверждении пользователем готовности играть.
@@ -97,8 +114,7 @@ class PlayersParty(list):
             message = messages.PlayerResponseMessage(player, packet)
             player_dispatcher.dispatch(message)
         if len(self._ready) == len(self):
-            self._unsubscribe()
-            self._stop_timer()
+            self._deinit()
             message = messages.GameStartedMessage(self)
             player_dispatcher.dispatch(message)
             
@@ -126,7 +142,7 @@ class PlayersParty(list):
         '''
         Запускает таймер, по истечении которого группа будет распущена.
         '''
-        logger.debug('starting party timer')
+        logger.debug('starting party timer for %s seconds'%self.DISMISS_TIME)
         self._timer = Timer(self.DISMISS_TIME, self._dismiss)
         self._timer.start()
         

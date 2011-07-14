@@ -125,10 +125,19 @@ class GamblingTable(object):
         @param party: PlayersParty
         '''
         self._members = self._get_table_members(party)
+        self._set_players_game_flag(True)
         self._results = GameResults(self._members)
         self._is_ended = False
         self._subscribe()
         self._start()
+        
+    def _set_players_game_flag(self, value):
+        '''
+        Выставляет игрокам флажки, что они сейчас играют (или уже не играют).
+        @param value: bool
+        '''
+        for player in self._members.keys():
+            player.is_in_game = value
         
     def _get_member_class(self):
         '''
@@ -186,9 +195,10 @@ class GamblingTable(object):
         '''
         Заканчивает игру.
         '''
-        self._is_ended = True
-        self._unsubscribe()
         self._on_end()
+        self._unsubscribe()
+        self._is_ended = True
+        self._set_players_game_flag(False)
         
     def _get_current_turning_member(self):
         '''

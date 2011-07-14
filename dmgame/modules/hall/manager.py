@@ -90,11 +90,15 @@ class HallManager(object):
         Выполняется при запросе пользователя на вход в зал.
         @param message: EnterPacket
         '''
-        logger.debug('handling hall enter request')
-        packet = outcoming.WelcomePacket()
-        message = messages.PlayerResponseMessage(message.player, packet)
-        player_dispatcher.dispatch(message)
-        
+        player = message.player
+        if player.can_enter_hall():
+            logger.debug('handling hall enter request for player %s'%player)
+            packet = outcoming.WelcomePacket()
+            message = messages.PlayerResponseMessage(player, packet)
+            player_dispatcher.dispatch(message)
+        else:
+            logger.debug('hall enter request rejected for player %s'%player)
+
     def _add_to_queue(self, player):
         '''
         Добавляет игрока в очередь.
