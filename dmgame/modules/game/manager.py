@@ -18,20 +18,31 @@ class GameManager(object):
     def __init__(self):
         self._tables = []
 
-    def _on_game_started(self, message):
+    def _on_party_ready(self, message):
         '''
-        Вызывается при начале новой игры.
+        Выполняется, когда группа готова.
         @param message: PartyReadyMessage
         '''
         logger.debug('starting game')
         table = a_la_21.GamblingTable(message.party)
         self._tables.append(table)
+        
+    def _on_game_ended(self, message):
+        '''
+        Выполняется при завершении игры.
+        @param message: GameEndedMessage
+        '''
+        table = message.table
+        if table in self._tables:
+            self._tables.remove(table)
+        logger.debug('game has ended')
 
     def _subscribe(self):
         '''
         Подписывается на всякие сообщения.
         '''
-        player_dispatcher.subscribe(messages.PartyReadyMessage, self._on_game_started)
+        player_dispatcher.subscribe(messages.PartyReadyMessage, self._on_party_ready)
+        player_dispatcher.subscribe(messages.GameEndedMessage, self._on_game_ended)
 
     def init(self):
         '''
