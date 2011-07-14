@@ -171,3 +171,15 @@ class PartyReadyMessage(Message):
         @param party: PlayersParty
         '''
         self.party = party
+        
+        
+class GameEndedMessage(Message):
+    '''
+    Игра завершена.
+    '''
+    
+    def __init__(self, table):
+        '''
+        @param table: GamblingTable
+        '''
+        self.table = table

@@ -175,7 +175,7 @@ class GamblingTable(object):
         for member in self._members.values():
             self._send_to_member(member, packet)
     
-    def _send_game_started_message(self):
+    def _send_game_started_packet(self):
         '''
         Рассылает сообщение, что игра началась.
         '''
@@ -188,8 +188,15 @@ class GamblingTable(object):
         '''
         Начинает игру.
         '''
-        self._send_game_started_message()
+        self._send_game_started_packet()
         self._on_start()
+        
+    def _send_game_ended_message(self):
+        '''
+        Рассылает сообщение, что игра завершилась.
+        '''
+        message = messages.GameEndedMessage(self)
+        player_dispatcher.dispatch(message)
     
     def _end(self):
         '''
@@ -199,6 +206,7 @@ class GamblingTable(object):
         self._unsubscribe()
         self._is_ended = True
         self._set_players_game_flag(False)
+        self._send_game_ended_message()
         
     def _get_current_turning_member(self):
         '''
@@ -210,7 +218,7 @@ class GamblingTable(object):
                 return member
         return None
     
-    def _send_member_turning_message(self, member_turning):
+    def _send_member_turning_packet(self, member_turning):
         '''
         Рассылает сообщение, что игрок теперь ходит.
         @param member_turning: TableMember
@@ -230,7 +238,7 @@ class GamblingTable(object):
         else:
             current.is_turning = False
         member.is_turning = True
-        self._send_member_turning_message(member)
+        self._send_member_turning_packet(member)
         
     def _set_random_member_turning(self):
         '''
@@ -293,6 +301,16 @@ class GamblingTable(object):
         turn = self._get_turn_object(member, message.packet.data)
         logger.debug('player %s made a turn %s'%(member, turn))
         self._on_member_turn(member, turn)
+        
+    def _send_member_leave_packet(self, member_left):
+        '''
+        Рассылает сообщение, что игрок вышел из игры.
+        @param member_left: TableMember
+        '''
+        packet = outcoming.MemberLeavingPacket(member_left)
+        for member in self._members.values():
+            if member != member_left:
+                self._send_to_member(member, packet)
 
     def _handle_player_leave(self, message):
         '''
@@ -301,7 +319,9 @@ class GamblingTable(object):
         '''
         player = message.player
         if player in self._members:
-            self._on_member_leave(self._members[player])
+            member = self._members[player]
+            self._send_member_leave_packet(member)
+            self._on_member_leave(member)
         
     def _subscribe(self):
         '''

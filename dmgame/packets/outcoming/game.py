@@ -53,6 +53,23 @@ class MemberTurningPacket(GamePacket):
         return {'member': self.member.number}
     
     
+class MemberLeavingPacket(GamePacket):
+    '''
+    Игрок выходит из игры.
+    '''
+    
+    type = 'member_leaving'
+
+    def __init__(self, member):
+        '''
+        @param member: TableMember
+        '''
+        self.member = member
+
+    def _get_data(self):
+        return {'member': self.member.number}
+    
+    
 class ResultsAvailablePacket(GamePacket):
     '''
     Доступны результаты игры.
