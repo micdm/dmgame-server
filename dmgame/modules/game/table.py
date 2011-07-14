@@ -191,6 +191,13 @@ class GamblingTable(object):
         self._send_game_started_packet()
         self._on_start()
         
+    def _send_game_ended_packet(self):
+        '''
+        Рассылает игрокам сообщение, что игра завершилась.
+        '''
+        packet = outcoming.GameEndedPacket()
+        self._send_to_all(packet)
+        
     def _send_game_ended_message(self):
         '''
         Рассылает сообщение, что игра завершилась.
@@ -203,6 +210,7 @@ class GamblingTable(object):
         Заканчивает игру.
         '''
         self._on_end()
+        self._send_game_ended_packet()
         self._unsubscribe()
         self._is_ended = True
         self._set_players_game_flag(False)

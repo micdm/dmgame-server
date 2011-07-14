@@ -34,6 +34,14 @@ class GameStartedPacket(GamePacket):
             'id': self.member.number,
             'members': [member.number for member in self.all_members]
         }
+        
+        
+class GameEndedPacket(GamePacket):
+    '''
+    Игра завершилась.
+    '''
+    
+    type = 'game_ended'
 
 
 class MemberTurningPacket(GamePacket):
