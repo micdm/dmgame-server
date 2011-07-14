@@ -161,9 +161,9 @@ class PartyDismissedMessage(Message):
         self.party = party
         
         
-class GameStartedMessage(Message):
+class PartyReadyMessage(Message):
     '''
-    Игра началась.
+    Группа полностью готова к игре.
     '''
     
     def __init__(self, party):

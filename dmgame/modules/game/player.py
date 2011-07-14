@@ -115,7 +115,7 @@ class PlayersParty(list):
             player_dispatcher.dispatch(message)
         if len(self._ready) == len(self):
             self._deinit()
-            message = messages.GameStartedMessage(self)
+            message = messages.PartyReadyMessage(self)
             player_dispatcher.dispatch(message)
             
     def _on_player_disconnected(self, message):

@@ -21,7 +21,7 @@ class GameManager(object):
     def _on_game_started(self, message):
         '''
         Вызывается при начале новой игры.
-        @param message: GameStartedMessage
+        @param message: PartyReadyMessage
         '''
         logger.debug('starting game')
         table = a_la_21.GamblingTable(message.party)
@@ -31,7 +31,7 @@ class GameManager(object):
         '''
         Подписывается на всякие сообщения.
         '''
-        player_dispatcher.subscribe(messages.GameStartedMessage, self._on_game_started)
+        player_dispatcher.subscribe(messages.PartyReadyMessage, self._on_game_started)
 
     def init(self):
         '''
