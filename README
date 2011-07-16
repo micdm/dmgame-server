@@ -6,8 +6,11 @@ virtualenv dmgame && cd dmgame
 ./bin/easy_install tornado
 git clone git://github.com/micdm/dmgame.git project && cd project
 
-# Запускаем (в разных терминалах):
-sudo ./start policy
-./start web
-./start ws
- 
+# Запускаем (рут нужен для flash-policy-сервера, который слушает 843 порт):
+sudo ./start.sh
+
+# Смотрим логи (вместо ws можно подставить также policy и web):
+tail -f /tmp/game-ws.log
+
+# Останавливаем:
+sudo ./stop.sh
