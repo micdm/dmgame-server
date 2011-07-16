@@ -113,7 +113,7 @@ class GamblingTable(CardGamblingTable):
         '''
         if isinstance(turn, OneMoreCardTurn):
             self._give_cards_to_member(member, 1)
-            sum = self._get_hand_sum(member.hand)
+            sum = member.get_hand_value()
             if sum >= self.MAX_VALUE:
                 self._end()
         if isinstance(turn, CardsEnoughTurn):
