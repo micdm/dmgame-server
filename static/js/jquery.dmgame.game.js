@@ -78,7 +78,7 @@
 	
 	var listenToGameStarted = function() {
 		$.dmgame.dispatcher.bind_to_incoming(['game', 'game_started'], function(data) {
-			_container.find('.member_area').remove();
+			_container.empty();
 			_id = data.id;
 			_members = {};
 			for (var i in data.members) {

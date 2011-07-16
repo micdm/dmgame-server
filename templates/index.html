@@ -22,12 +22,12 @@
 				$.dmgame.wsLoader('/static/swf/WebSocketMain.swf', 'ws://game.mic-dm.tom.ru:8888');
 				$.dmgame.auth();
 				$.dmgame.hall();
-				$.dmgame.game($('body'));
+				$.dmgame.game($('#game_container'));
 			});
 
 		</script>
 	</head>
 	<body>
-		
+		<div id="game_container"></div>
 	</body>
 </html>
