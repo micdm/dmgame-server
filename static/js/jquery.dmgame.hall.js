@@ -20,6 +20,12 @@
 		$.dmgame.dispatcher.bind_to_incoming(['hall', 'party_invite'], function() {
 			$.dmgame.dispatcher.trigger_outcoming(['hall', 'accept_invite']);
 		});
+		
+		$.dmgame.dispatcher.bind_to_incoming(['game', 'game_ended'], function() {
+			setTimeout(function() {
+				$.dmgame.dispatcher.trigger_outcoming(['hall', 'play']);
+			}, 3000);
+		});
 	};
 
 })(jQuery);

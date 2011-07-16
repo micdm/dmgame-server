@@ -1,0 +1,35 @@
+.member_area {
+	border-top: 1px solid gray;
+	border-bottom: 1px solid gray;
+	margin: 5px 0px;
+	padding: 5px;
+}
+
+.member_area.now_turning {
+	background: lightgray;
+}
+
+.member_area h2 span {
+	margin-left: 10px;
+}
+
+.card {
+	width: 80px;
+	height: 116px;
+	background: url('/static/img/cards.png') no-repeat;
+	display: inline-block;
+	margin: 3px;
+}
+
+.result {
+	font-weight: bold;
+	font-size: 2em;
+}
+
+.result.win {
+	color: green;
+}
+
+.result.defeat {
+	color: red;
+}
