@@ -2,19 +2,22 @@
 	<head>
 		<title>DMGAME</title>
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-		<script type="text/javascript" src="static/jquery-1.6.2.min.js"></script>
-		<script type="text/javascript" src="static/jquery.json-2.2.min.js"></script>
-		<script type="text/javascript" src="static/web-socket-js/swfobject.js"></script>
-		<script type="text/javascript" src="static/web-socket-js/web_socket.js"></script>
-		<script type="text/javascript" src="static/dummy_client.js"></script>
+		
+		<script type="text/javascript" src="/static/js/jquery-1.6.2.min.js"></script>
+		<script type="text/javascript" src="/static/js/jquery.json-2.2.min.js"></script>
+		<script type="text/javascript" src="/static/js/web-socket-js/swfobject.js"></script>
+		<script type="text/javascript" src="/static/js/web-socket-js/web_socket.js"></script>
+		
+		<script type="text/javascript" src="/static/js/jquery.dmgame.js"></script>
+		<script type="text/javascript" src="/static/js/jquery.dmgame.dispatcher.js"></script>
+		<script type="text/javascript" src="/static/js/jquery.dmgame.ws-loader.js"></script>
 		<script type="text/javascript">
-			var client = new dummyClient('static/web-socket-js/WebSocketMain.swf', 'ws://game.mic-dm.tom.ru:8888');
-			client.addToQueue('auth', 'login', {login: 'foo', password: 'password'});
-			client.on('auth', 'login_status', 'hall', 'enter');
-			client.on('hall', 'welcome', 'hall', 'play');
-			client.on('hall', 'party_invite', 'hall', 'accept_invite');
-			client.on('game', 'member_turning', 'game', 'turn', {'type': 'cards_enough'})
-			client.init();
+			
+			$(document).ready(function() {
+				$.dmgame.wsLoader('/static/swf/WebSocketMain.swf', 'ws://game.mic-dm.tom.ru:8888');
+				$.dmgame.dispatcher.bind('active.loader', function() {console.log('ready')})			
+			});
+
 		</script>
 	</head>
 	<body></body>
