@@ -21,12 +21,12 @@ class Card(object):
     SUIT_CLUBS = '♣'
     SUIT_SPADES = '♠'
     
+    RANK_ACE = 1
     RANK_TWO = 2
     RANK_SIX = 6
     RANK_JACK = 11
     RANK_QUEEN = RANK_JACK + 1
     RANK_KING = RANK_QUEEN + 1
-    RANK_ACE = RANK_KING + 1
 
     def __init__(self, suit, rank):
         '''
@@ -41,7 +41,7 @@ class Card(object):
         Возвращает ранг как строку.
         @return: string
         '''
-        ranks = {self.RANK_JACK: 'J', self.RANK_QUEEN: 'Q', self.RANK_KING: 'K', self.RANK_ACE: 'A'}
+        ranks = {self.RANK_ACE: 'A', self.RANK_JACK: 'J', self.RANK_QUEEN: 'Q', self.RANK_KING: 'K'}
         if self.rank in ranks:
             return ranks[self.rank]
         return self.rank
@@ -55,6 +55,13 @@ class Card(object):
         @return: dict
         '''
         return {'suit': self.suit, 'rank': self.rank}
+    
+    def is_ace(self):
+        '''
+        Туз?
+        @return: bool
+        '''
+        return self.rank == self.RANK_ACE
     
     def is_jack(self):
         '''
@@ -76,14 +83,7 @@ class Card(object):
         @return: bool
         '''
         return self.rank == self.RANK_KING
-    
-    def is_ace(self):
-        '''
-        Туз?
-        @return: bool
-        '''
-        return self.rank == self.RANK_ACE
-    
+
     
 class CardSet(list):
     '''
@@ -118,9 +118,9 @@ class CardDeck(object):
         @return: CardSet
         '''
         if type == self.TYPE_36:
-            return CardSet(Card(suit, rank) for rank in range(Card.RANK_SIX, Card.RANK_ACE + 1))
+            return CardSet(Card(suit, rank) for rank in [Card.RANK_ACE] + range(Card.RANK_SIX, Card.RANK_KING + 1))
         if type == self.TYPE_52:
-            return CardSet(Card(suit, rank) for rank in range(Card.RANK_TWO, Card.RANK_ACE + 1))
+            return CardSet(Card(suit, rank) for rank in range(Card.RANK_ACE, Card.RANK_KING + 1))
         
     def _get_one_deck(self, type):
         '''
