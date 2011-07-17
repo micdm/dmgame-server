@@ -5,8 +5,8 @@
 		
 		<link href="/static/css/game.css" media="screen" rel="stylesheet" type="text/css">
 
-		<script type="text/javascript" src="/static/js/jquery-1.6.2.min.js"></script>
-		<script type="text/javascript" src="/static/js/jquery.json-2.2.min.js"></script>
+		<script type="text/javascript" src="/static/js/jquery.min.js"></script>
+		<script type="text/javascript" src="/static/js/jquery.json.min.js"></script>
 		<script type="text/javascript" src="/static/js/web-socket-js/swfobject.js"></script>
 		<script type="text/javascript" src="/static/js/web-socket-js/web_socket.js"></script>
 		
@@ -19,7 +19,7 @@
 		<script type="text/javascript">
 			
 			$(document).ready(function() {
-				$.dmgame.wsLoader('/static/swf/WebSocketMain.swf', 'ws://game.mic-dm.tom.ru:8888');
+				$.dmgame.wsLoader('/static/js/web-socket-js/WebSocketMain.swf', 'ws://game.mic-dm.tom.ru:8888');
 				$.dmgame.auth();
 				$.dmgame.hall();
 				$.dmgame.game($('#game_container'));

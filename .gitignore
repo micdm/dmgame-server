@@ -3,3 +3,6 @@
 .settings
 settings_local.py
 *.pyc
+static/js/web-socket-js/
+static/js/jquery.min.js
+static/js/jquery.json.min.js

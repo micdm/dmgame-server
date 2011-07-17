@@ -8,6 +8,14 @@ git clone git://github.com/micdm/dmgame.git project && cd project
 # Устанавливаем что надо:
 ./bin/easy_install tornado
 ./bin/easy_install asyncmongo
+# JS:
+wget http://code.jquery.com/jquery.min.js -O static/js/jquery.min.js
+wget http://jquery-json.googlecode.com/files/jquery.json-2.2.min.js -O static/js/jquery.json.min.js
+# Для клиентских вебсокетов:
+mkdir static/js/web-socket-js
+wget https://raw.github.com/gimite/web-socket-js/master/swfobject.js -O static/js/web-socket-js/swfobject.js
+wget https://raw.github.com/gimite/web-socket-js/master/web_socket.js -O static/js/web-socket-js/web_socket.js
+wget https://raw.github.com/gimite/web-socket-js/master/WebSocketMain.swf -O static/js/web-socket-js/WebSocketMain.swf
 
 # Запускаем (рут нужен для flash-policy-сервера, который слушает 843 порт):
 sudo ./start.sh
