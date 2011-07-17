@@ -299,16 +299,14 @@ class GamblingTable(object):
         if self._is_ended:
             return
         player = message.player
-        if player not in self._members:
-            logger.debug('player %s not in members, skipping'%player)
-            return
-        member = self._members[player]
-        if not member.is_turning:
-            logger.debug('player %s is not turning now'%member)
-            return
-        turn = self._get_turn_object(member, message.packet.data)
-        logger.debug('player %s made a turn %s'%(member, turn))
-        self._on_member_turn(member, turn)
+        if player in self._members:
+            member = self._members[player]
+            if member.is_turning:
+                turn = self._get_turn_object(member, message.packet.data)
+                logger.debug('player %s made a turn %s'%(member, turn))
+                self._on_member_turn(member, turn)
+            else:
+                logger.debug('player %s is not turning now'%member)
         
     def _send_member_leaving_packet(self, member_leaving):
         '''
