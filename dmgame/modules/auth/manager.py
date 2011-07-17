@@ -1,35 +1,16 @@
 # coding=utf8
 '''
-Менджер аутентификации пользователей.
+Менеджер аутентификации пользователей.
 @author: Mic, 2011
 '''
 
+from dmgame.db.processors.user import UserProcessor
 from dmgame.messages.dispatcher import client_dispatcher, user_dispatcher
 import dmgame.messages.messages as messages
 import dmgame.packets.incoming.auth as incoming
 import dmgame.packets.outcoming.auth as outcoming
 from dmgame.utils.log import get_logger
 logger = get_logger(__name__)
-
-class User(object):
-    '''
-    Класс пользователя.
-    '''
-    
-    def __init__(self, id):
-        '''
-        @param id: int
-        '''
-        self.id = id
-        
-    def __eq__(self, other):
-        return self.id == other.id
-    
-    def __ne__(self, other):
-        return not self.__eq__(other)
-        
-    def __str__(self):
-        return '#%s'%self.id
     
     
 class MessageResender(object):
@@ -94,25 +75,33 @@ class AuthManager(object):
         self._authenticated = {}
         self._message_resender = MessageResender(self._authenticated)
         
-    def _authenticate(self, connection_id, packet):
+    def _authenticate(self, connection_id, login, password):
         '''
         Аутентифицирует пользователя.
         @param connection_id: int
-        @param packet: IncomingPacket
+        @param login: string
+        @param password: string
         '''
-        logger.debug('handling auth request')
-        user = User(1)
-        self._authenticated[connection_id] = user
-        response_packet = outcoming.LoginStatusPacket(outcoming.LoginStatusPacket.STATUS_OK)
-        message = messages.UserResponseMessage(user, connection_id, response_packet)
-        user_dispatcher.dispatch(message)
-            
+        def _on_result(user):
+            if user is None:
+                logger.debug('user with login "%s" not found'%login)
+                status = outcoming.LoginStatusPacket.STATUS_NOT_FOUND
+            else:
+                logger.debug('user %s successfully authenticated'%user)
+                self._authenticated[connection_id] = user
+                status = outcoming.LoginStatusPacket.STATUS_OK
+            packet = outcoming.LoginStatusPacket(status)
+            message = messages.UserResponseMessage(user, connection_id, packet)
+            user_dispatcher.dispatch(message)
+        UserProcessor.get_by_login_and_password(login, password, _on_result)
+
     def _on_client_login_request(self, message):
         '''
         Вызывается при запросе клиента на авторизацию.
         @param Message: LoginMessage
         '''
-        self._authenticate(message.connection_id, message.packet)
+        packet = message.packet
+        self._authenticate(message.connection_id, packet.login, packet.password)
         
     def _on_user_disconnected(self, message):
         '''
