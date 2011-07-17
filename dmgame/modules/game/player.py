@@ -36,13 +36,6 @@ class Player(object):
     
     def __str__(self):
         return '<Player #%s>'%self.connection_id
-    
-    def can_enter_hall(self):
-        '''
-        Может ли игрок войти в игровой зал?
-        @return: bool
-        '''
-        return not self.is_in_party and not self.is_in_game
 
 
 class PlayersParty(list):

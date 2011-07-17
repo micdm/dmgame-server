@@ -84,6 +84,14 @@ class HallManager(object):
     def __init__(self):
         self._players_queue = PlayersQueue()
         self._message_resender = MessageResender()
+        
+    def _can_player_enter(self, player):
+        '''
+        Может ли игрок войти в игровой зал?
+        @param player: Player
+        @return: bool
+        '''
+        return not player.is_in_party and not player.is_in_game
 
     def _on_player_enter_request(self, message):
         '''
@@ -91,7 +99,7 @@ class HallManager(object):
         @param message: EnterPacket
         '''
         player = message.player
-        if player.can_enter_hall():
+        if self._can_player_enter(player):
             logger.debug('handling hall enter request for player %s'%player)
             packet = outcoming.WelcomePacket()
             message = messages.PlayerResponseMessage(player, packet)
@@ -122,8 +130,12 @@ class HallManager(object):
         Выполняется при запросе пользователя на игру.
         @param message: PlayPacket
         '''
-        logger.debug('handling hall play request')
-        self._add_to_queue(message.player)
+        player = message.player
+        if self._can_player_enter(player):
+            logger.debug('handling hall play request')
+            self._add_to_queue(message.player)
+        else:
+            logger.debug('play request rejected for player %s'%player)
         
     def _subscribe(self):
         '''
