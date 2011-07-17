@@ -89,7 +89,7 @@
 
 	var listenToMemberTurning = function() {
 		$.dmgame.dispatcher.bind_to_incoming(['game', 'member_turning'], function(data) {
-			setMemberTurning(data.member);
+			setMemberTurning(data.id);
 		});
 	}
 	
@@ -112,11 +112,11 @@
 		$.dmgame.dispatcher.bind_to_incoming(['game', 'giving_cards'], function(data) {
 			if (data.count) {
 				for (var i = 0; i < data.count; i += 1) {
-					giveCardToMember(data.member);
+					giveCardToMember(data.id);
 				}
 			} else {
 				for (var i in data.cards) {
-					giveCardToMember(data.member, data.cards[i]);
+					giveCardToMember(data.id, data.cards[i]);
 				}
 			}
 		});

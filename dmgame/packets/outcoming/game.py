@@ -6,6 +6,15 @@
 
 from dmgame.packets.outcoming import OutcomingPacket
 
+def card_as_dict(card):
+    '''
+    Возвращает карту как словарь.
+    @param card: Card
+    @return: dict
+    '''
+    return {'suit': card.suit, 'rank': card.rank}
+
+
 class GamePacket(OutcomingPacket):
     '''
     Базовый абстрактный класс.
@@ -58,7 +67,7 @@ class MemberTurningPacket(GamePacket):
         self.member = member
 
     def _get_data(self):
-        return {'member': self.member.number}
+        return {'id': self.member.number}
     
     
 class MemberLeavingPacket(GamePacket):
@@ -75,7 +84,7 @@ class MemberLeavingPacket(GamePacket):
         self.member = member
 
     def _get_data(self):
-        return {'member': self.member.number}
+        return {'id': self.member.number}
     
     
 class ResultsAvailablePacket(GamePacket):
@@ -102,22 +111,22 @@ class GivingCardsPacket(GamePacket):
     
     type = 'giving_cards'
     
-    def __init__(self, member, cards=None, count=None):
+    def __init__(self, member, cards, hidden):
         '''
         @param member: TableMember
         @param cards: CardSet
-        @param count: int
+        @param hidden: bool
         '''
         self.member = member
         self.cards = cards
-        self.count = count
+        self.hidden = hidden
         
     def _get_data(self):
-        result = {'member': self.member.number}
-        if self.cards is not None:
-            result['cards'] = [card.as_dict() for card in self.cards]
-        if self.count is not None:
-            result['count'] = self.count
+        result = {'id': self.member.number}
+        if self.hidden:
+            result['count'] = len(self.cards)
+        else:
+            result['cards'] = map(card_as_dict, self.cards)
         return result
     
     
@@ -137,7 +146,7 @@ class OpeningCardsPacket(GamePacket):
     def _get_data(self):
         result = []
         for member in self.members:
-            cards = [card.as_dict() for card in member.hand]
+            cards = map(card_as_dict, member.hand)
             info = {'id': member.number, 'cards': cards}
             result.append(info)
         return result

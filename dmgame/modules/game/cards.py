@@ -49,13 +49,6 @@ class Card(object):
     def __str__(self):
         return '%s%s'%(self.suit, self._get_rank_as_string())
     
-    def as_dict(self):
-        '''
-        Возвращает карту как словарь.
-        @return: dict
-        '''
-        return {'suit': self.suit, 'rank': self.rank}
-    
     def is_ace(self):
         '''
         Туз?
@@ -199,9 +192,9 @@ class CardGamblingTable(GamblingTable):
         '''
         for member in self._members.values():
             if member == recipient:
-                packet = outcoming.GivingCardsPacket(recipient, cards=cards)
+                packet = outcoming.GivingCardsPacket(recipient, cards, True)
             else:
-                packet = outcoming.GivingCardsPacket(recipient, count=len(cards))
+                packet = outcoming.GivingCardsPacket(recipient, cards, False)
             self._send_to_member(member, packet)
         
     def _give_cards_to_member(self, member, count):
