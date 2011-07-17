@@ -6,6 +6,8 @@
 
 from random import choice
 
+from dmgame.db.models import TableMember
+from dmgame.db.processors.table import GamblingTableProcessor
 from dmgame.messages.dispatcher import player_dispatcher 
 import dmgame.messages.messages as messages
 import dmgame.modules.game.errors as errors
@@ -13,32 +15,6 @@ import dmgame.packets.incoming.game as incoming
 import dmgame.packets.outcoming.game as outcoming
 from dmgame.utils.log import get_logger
 logger = get_logger(__name__)
-
-class TableMember(object):
-    '''
-    Член игрового стола.
-    '''
-    
-    def __init__(self, number, player):
-        '''
-        @param number: int
-        @param player: Player
-        '''
-        self.number = number
-        self.player = player
-        self.is_turning = False
-        self.is_turning_first = False
-        self.result = None
-        
-    def __str__(self):
-        return str(self.player)
-    
-    def __eq__(self, other):
-        return self.player == other.player
-    
-    def __ne__(self, other):
-        return not self.__eq__(other)
-
 
 class PlayerTurn(object):
     '''
@@ -126,20 +102,13 @@ class GamblingTable(object):
         '''
         # TODO: добавить раунды
         # TODO: добавить сохранение в БД
+        self._is_ended = False
         self._members = self._get_table_members(party)
         self._set_players_game_flag(True)
         self._results = GameResults(self._members)
-        self._is_ended = False
         self._subscribe()
         self._start()
-        
-    def _set_players_game_flag(self, value):
-        '''
-        Выставляет игрокам флажки, что они сейчас играют (или уже не играют).
-        @param value: bool
-        '''
-        for player in self._members.keys():
-            player.is_in_game = value
+        self._save()
         
     def _get_member_class(self):
         '''
@@ -159,6 +128,20 @@ class GamblingTable(object):
         for number, player in zip(range(len(party)), party):
             members[player] = member_class(number, player)
         return members
+    
+    def _set_players_game_flag(self, value):
+        '''
+        Выставляет игрокам флажки, что они сейчас играют (или уже не играют).
+        @param value: bool
+        '''
+        for player in self._members.keys():
+            player.is_in_game = value
+            
+    def _save(self):
+        '''
+        Сохраняет состояние стола в БД.
+        '''
+        GamblingTableProcessor.save(self)
     
     def _send_to_member(self, member, packet):
         '''

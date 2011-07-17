@@ -14,24 +14,36 @@ class ModelProcessor(object):
     '''
     Базовый процессор моделей.
     '''
+    
+    # Класс модели:
+    _model = None
+    
+    # Список полей, которые копируются напрямую:
+    _fields = []
 
     @classmethod
-    def _model_to_dict(cls, model):
+    def model_to_dict(cls, model):
         '''
         Заполняет словарь по данным модели.
         @param model: Model
         @return: dict
         '''
-        raise NotImplementedError()
+        result = {}
+        for field in cls._fields:
+            result[field] = getattr(model, field)
+        return result
 
     @classmethod
-    def _dict_to_model(cls, dict):
+    def dict_to_model(cls, dict):
         '''
         Создает модель и заполняет ее по словарю.
         @param dict: dict
         @return: Model
         '''
-        raise NotImplementedError()
+        model = cls._model()
+        for field in cls._fields:
+            setattr(model, field, dict[field])
+        return model
 
 
 class DocumentProcessor(ModelProcessor):
@@ -41,10 +53,10 @@ class DocumentProcessor(ModelProcessor):
     '''
 
     # Название коллекции, в которой хранятся модели:
-    COLLECTION = None
+    _collection = None
 
     @classmethod
-    def _call_on_results(cls, callback, response, error):
+    def _call_on_find(cls, callback, response, error):
         '''
         Вызывается при появлении результатов.
         @param callback: function
@@ -53,11 +65,11 @@ class DocumentProcessor(ModelProcessor):
         '''
         if isinstance(response, list):
             if len(response):
-                result = map(cls._dict_to_model, response)
+                result = map(cls.dict_to_model, response)
             else:
                 result = None
         else:
-            result = cls._dict_to_model(response)
+            result = cls.dict_to_model(response)
         if error is not None:
             logger.error(error)
         callback(result)
@@ -70,8 +82,8 @@ class DocumentProcessor(ModelProcessor):
         @param callback: callback
         @return: list
         '''
-        on_results = partial(cls._call_on_results, callback)
-        return DbClient.get_collection(cls.COLLECTION).find(filter, callback=on_results)
+        on_results = partial(cls._call_on_find, callback)
+        return DbClient.get_collection(cls._collection).find(filter, callback=on_results)
     
     @classmethod
     def find_one(cls, filter, callback):
@@ -81,14 +93,29 @@ class DocumentProcessor(ModelProcessor):
         @param callback: callback
         @return: object
         '''
-        on_results = partial(cls._call_on_results, callback)
-        return DbClient.get_collection(cls.COLLECTION).find_one(filter, callback=on_results)
+        on_results = partial(cls._call_on_find, callback)
+        return DbClient.get_collection(cls._collection).find_one(filter, callback=on_results)
+    
+    @classmethod
+    def _call_on_insert(cls, callback, response, error):
+        '''
+        Вызывается при добавлении записи.
+        @param callback: function
+        @param response: dict
+        @param error: object
+        '''
+        if error is not None:
+            logger.error(error)
+        callback()
 
     @classmethod
-    def save(cls, model):
+    def save(cls, model, callback=None):
         '''
         Сохраняет модель в базу.
         @param model: Model
         '''
-        data = cls._model_to_dict(model)
-        DbClient.get_collection(cls.COLLECTION).save(data)
+        data = cls.model_to_dict(model)
+        if callback is None:
+            callback = lambda: True
+        on_result = partial(cls._call_on_insert, callback)
+        DbClient.get_collection(cls._collection).save(data, callback=on_result)

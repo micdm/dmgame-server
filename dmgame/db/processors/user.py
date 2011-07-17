@@ -16,14 +16,9 @@ class UserProcessor(DocumentProcessor):
     Процессор данных о пользователях.
     '''
 
-    COLLECTION = 'user'
-    
-    @classmethod
-    def _dict_to_model(cls, dict):
-        model = User()
-        model.id = dict['id']
-        model.login = dict['login']
-        return model
+    _model = User
+    _fields = ['id', 'login']
+    _collection = 'user'
 
     @classmethod
     def get_by_login_and_password(cls, login, password, callback):
