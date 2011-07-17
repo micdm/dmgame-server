@@ -3,8 +3,11 @@
 # Забираем исходники:
 cd /home/dev/
 virtualenv dmgame && cd dmgame
-./bin/easy_install tornado
 git clone git://github.com/micdm/dmgame.git project && cd project
+
+# Устанавливаем что надо:
+./bin/easy_install tornado
+./bin/easy_install asyncmongo
 
 # Запускаем (рут нужен для flash-policy-сервера, который слушает 843 порт):
 sudo ./start.sh
