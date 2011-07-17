@@ -124,6 +124,8 @@ class GamblingTable(object):
         '''
         @param party: PlayersParty
         '''
+        # TODO: добавить раунды
+        # TODO: добавить сохранение в БД
         self._members = self._get_table_members(party)
         self._set_players_game_flag(True)
         self._results = GameResults(self._members)
