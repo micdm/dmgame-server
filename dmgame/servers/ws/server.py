@@ -122,8 +122,11 @@ class Server(object):
         logger.debug('sending packet %s to handler #%s'%(packet, handler_id))
         text = Converter.serialize(packet)
         if text is not None and handler_id in self._handlers:
-            self._handlers[handler_id].write_message(text)
-        
+            try:
+                self._handlers[handler_id].write_message(text)
+            except IOError as e:
+                logger.debug('error on writing message: %s'%e)
+
     def _init_subscription(self):
         '''
         Инициализирует подписку.
