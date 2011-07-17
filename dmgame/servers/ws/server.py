@@ -12,6 +12,7 @@ from tornado.websocket import WebSocketHandler
 from dmgame import settings
 from dmgame.messages.dispatcher import client_dispatcher
 import dmgame.messages.messages as messages
+import dmgame.packets.outcoming.misc as outcoming
 from dmgame.servers.ws.converter import Converter
 from dmgame.utils.log import get_logger
 logger = get_logger(__name__)
@@ -20,8 +21,14 @@ class Handler(WebSocketHandler):
     '''
     Обработчик соединений.
     '''
-    def __init__(self, on_packet, on_close, *args, **kwargs):
+    def __init__(self, on_open, on_packet, on_close, *args, **kwargs):
+        '''
+        @param on_open: function
+        @param on_packet: function
+        @param on_close: function
+        '''
         super(Handler, self).__init__(*args, **kwargs)
+        self._on_open = on_open
         self._on_packet = on_packet
         self._on_close = on_close
     
@@ -30,6 +37,7 @@ class Handler(WebSocketHandler):
         Выполняется при подключении клиента.
         '''
         logger.debug('client connected from %s'%self.request.remote_ip)
+        self._on_open()
 
     def on_message(self, text):
         '''
@@ -66,7 +74,23 @@ class Server(object):
         self._next_handler_id = 0
         self._handlers = {}
         
-    def _parse_packet(self, handler_id, text):
+    def _on_handler_open(self, handler_id):
+        '''
+        Проверяет количество текущих соединений.
+        Если указанное соединение лишнее, закрывает его.
+        @param handler_id: int
+        '''
+        count = len(self._handlers.values())
+        max_count = settings.MAX_CONNECTION_COUNT
+        if count > max_count:
+            logger.debug('max connection count of %s exceeded, closing handler %s'%(max_count, handler_id))
+            packet = outcoming.ServerBusyPacket()
+            message = messages.ClientResponseMessage(handler_id, packet)
+            client_dispatcher.dispatch(message)
+            handler = self._handlers[handler_id]
+            handler.close()
+        
+    def _on_handler_message(self, handler_id, text):
         '''
         Обрабатывает входящий пакет.
         @param handler_id: int
@@ -78,7 +102,7 @@ class Server(object):
             message = messages.ClientRequestMessage(handler_id, packet)
             client_dispatcher.dispatch(message)
         
-    def _close_handler(self, handler_id):
+    def _on_handler_close(self, handler_id):
         '''
         Удаляет обработчик соединения с указанным идентификатором.
         @param id: int
@@ -94,11 +118,14 @@ class Server(object):
         @return: Handler
         '''
         logger.debug('creating handler #%s'%self._next_handler_id)
-        on_packet = partial(self._parse_packet, self._next_handler_id)
-        on_close = partial(self._close_handler, self._next_handler_id)
-        handler = Handler(on_packet, on_close, *args, **kwargs)
-        # TODO: ограничить количество одновременных соединений.
-        self._handlers[self._next_handler_id] = handler
+        handler_id = self._next_handler_id
+        # Создаем объект соединения:
+        on_open = partial(self._on_handler_open, handler_id)
+        on_packet = partial(self._on_handler_message, handler_id)
+        on_close = partial(self._on_handler_close, handler_id)
+        handler = Handler(on_open, on_packet, on_close, *args, **kwargs)
+        # Сохраняем, инкрементируем счетчик:
+        self._handlers[handler_id] = handler
         self._next_handler_id += 1
         return handler
         
