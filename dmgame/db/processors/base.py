@@ -10,13 +10,10 @@ from dmgame.db.client import DbClient
 from dmgame.utils.log import get_logger
 logger = get_logger(__name__)
 
-class BaseProcessor(object):
+class ModelProcessor(object):
     '''
-    Базовый процессор данных.
+    Базовый процессор моделей.
     '''
-    
-    # Название коллекции, в которой хранятся модели:
-    COLLECTION = None
 
     @classmethod
     def _model_to_dict(cls, model):
@@ -26,14 +23,33 @@ class BaseProcessor(object):
         @return: dict
         '''
         raise NotImplementedError()
-    
+
+    @classmethod
+    def _dict_to_model(cls, dict):
+        '''
+        Создает модель и заполняет ее по словарю.
+        @param dict: dict
+        @return: Model
+        '''
+        raise NotImplementedError()
+
+
+class DocumentProcessor(ModelProcessor):
+    '''
+    Базовый процессор документов.
+    Умеет не только преобразовывать модели в словари и обратно, но и запрашивать и сохранять данные.
+    '''
+
+    # Название коллекции, в которой хранятся модели:
+    COLLECTION = None
+
     @classmethod
     def _call_on_results(cls, callback, response, error):
         '''
         Вызывается при появлении результатов.
         @param callback: function
         @param response: dict
-        @param error: 
+        @param error: object
         '''
         if isinstance(response, list):
             if len(response):
@@ -45,7 +61,7 @@ class BaseProcessor(object):
         if error is not None:
             logger.error(error)
         callback(result)
-    
+
     @classmethod
     def find(cls, filter, callback):
         '''
@@ -67,15 +83,6 @@ class BaseProcessor(object):
         '''
         on_results = partial(cls._call_on_results, callback)
         return DbClient.get_collection(cls.COLLECTION).find_one(filter, callback=on_results)
-
-    @classmethod
-    def _dict_to_model(cls, dict):
-        '''
-        Создает модель и заполняет ее по словарю.
-        @param dict: dict
-        @return: Model
-        '''
-        raise NotImplementedError()
 
     @classmethod
     def save(cls, model):
