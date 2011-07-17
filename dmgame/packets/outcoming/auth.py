@@ -19,7 +19,8 @@ class LoginStatusPacket(AuthPacket):
     Пакет со статусом аутентификации.
     '''
 
-    STATUS_OK = 'OK'
+    STATUS_OK = 'ok'
+    STATUS_NOT_FOUND = 'not_found'
 
     type = 'login_status'
 

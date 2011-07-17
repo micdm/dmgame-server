@@ -13,7 +13,7 @@
 		
 		// Если вход успешно прошел, шлем сообщение:
 		$.dmgame.dispatcher.bind_to_incoming(['auth', 'login_status'], function(data) {
-			if (data.status == 'OK') {
+			if (data.status == 'ok') {
 				console.log('auth ok');
 				$.dmgame.dispatcher.trigger('ok.auth');
 			}
