@@ -30,7 +30,6 @@ MAX_CONNECTION_COUNT = 100
 MONGODB_HOST = 'localhost'
 MONGODB_PORT = 27017
 MONGODB_DB_NAME = 'dmgame'
-MONGODB_POOL_ID = 'dmgame'
 
 try:
     from dmgame.settings_local import *

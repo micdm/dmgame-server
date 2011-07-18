@@ -82,18 +82,17 @@ class AuthManager(object):
         @param login: string
         @param password: string
         '''
-        def _on_result(user):
-            if user is None:
-                logger.debug('user with login "%s" not found'%login)
-                status = outcoming.LoginStatusPacket.STATUS_NOT_FOUND
-            else:
-                logger.debug('user %s successfully authenticated'%user)
-                self._authenticated[connection_id] = user
-                status = outcoming.LoginStatusPacket.STATUS_OK
-            packet = outcoming.LoginStatusPacket(status)
-            message = messages.UserResponseMessage(user, connection_id, packet)
-            user_dispatcher.dispatch(message)
-        UserProcessor.get_by_login_and_password(login, password, _on_result)
+        user = UserProcessor.get_by_login_and_password(login, password)
+        if user is None:
+            logger.debug('user with login "%s" not found'%login)
+            status = outcoming.LoginStatusPacket.STATUS_NOT_FOUND
+        else:
+            logger.debug('user %s successfully authenticated'%user)
+            self._authenticated[connection_id] = user
+            status = outcoming.LoginStatusPacket.STATUS_OK
+        packet = outcoming.LoginStatusPacket(status)
+        message = messages.UserResponseMessage(user, connection_id, packet)
+        user_dispatcher.dispatch(message)
 
     def _on_client_login_request(self, message):
         '''

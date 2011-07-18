@@ -56,66 +56,45 @@ class DocumentProcessor(ModelProcessor):
     _collection = None
 
     @classmethod
-    def _call_on_find(cls, callback, response, error):
-        '''
-        Вызывается при появлении результатов.
-        @param callback: function
-        @param response: dict
-        @param error: object
-        '''
-        if isinstance(response, list):
-            if len(response):
-                result = map(cls.dict_to_model, response)
-            else:
-                result = None
-        else:
-            result = cls.dict_to_model(response)
-        if error is not None:
-            logger.error(error)
-        callback(result)
+    def model_to_dict(cls, model):
+        result = super(DocumentProcessor, cls).model_to_dict(model)
+        if hasattr(model, '_id'):
+            result['_id'] = model._id
+        return result
 
     @classmethod
-    def find(cls, filter, callback):
+    def dict_to_model(cls, dict):
+        model = super(DocumentProcessor, cls).dict_to_model(dict)
+        model._id = dict['_id']
+        return model
+
+    @classmethod
+    def find(cls, filter):
         '''
         Ищет записи.
         @param filter: dict
-        @param callback: callback
         @return: list
         '''
-        on_results = partial(cls._call_on_find, callback)
-        return DbClient.get_collection(cls._collection).find(filter, callback=on_results)
+        data = DbClient.get_collection(cls._collection).find(filter)
+        return map(cls.dict_to_model, data)
     
     @classmethod
-    def find_one(cls, filter, callback):
+    def find_one(cls, filter):
         '''
         Ищет одну запись.
         @param filter: dict
-        @param callback: callback
-        @return: object
+        @return: Model
         '''
-        on_results = partial(cls._call_on_find, callback)
-        return DbClient.get_collection(cls._collection).find_one(filter, callback=on_results)
-    
-    @classmethod
-    def _call_on_insert(cls, callback, response, error):
-        '''
-        Вызывается при добавлении записи.
-        @param callback: function
-        @param response: dict
-        @param error: object
-        '''
-        if error is not None:
-            logger.error(error)
-        callback()
+        data = DbClient.get_collection(cls._collection).find_one(filter)
+        if data is None:
+            return None
+        return cls.dict_to_model(data)
 
     @classmethod
-    def save(cls, model, callback=None):
+    def save(cls, model):
         '''
         Сохраняет модель в базу.
         @param model: Model
         '''
         data = cls.model_to_dict(model)
-        if callback is None:
-            callback = lambda: True
-        on_result = partial(cls._call_on_insert, callback)
-        DbClient.get_collection(cls._collection).save(data, callback=on_result)
+        model._id = DbClient.get_collection(cls._collection).save(data, manipulate=True)

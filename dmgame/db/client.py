@@ -4,7 +4,7 @@
 @author: Mic, 2011
 '''
 
-from asyncmongo import Client
+from pymongo import Connection
 
 from dmgame import settings
 
@@ -23,8 +23,8 @@ class DbClient(object):
         @return: object
         '''
         if cls._db is None:
-            cls._db = Client(pool_id=settings.MONGODB_POOL_ID, host=settings.MONGODB_HOST,
-                             port=settings.MONGODB_PORT, dbname=settings.MONGODB_DB_NAME)
+            connection = Connection(settings.MONGODB_HOST, settings.MONGODB_PORT)
+            cls._db = connection[settings.MONGODB_DB_NAME]
         return cls._db
 
     @classmethod
