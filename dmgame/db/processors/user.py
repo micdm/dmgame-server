@@ -17,19 +17,18 @@ class UserProcessor(DocumentProcessor):
     '''
 
     _model = User
-    _fields = ['id', 'login']
+    _fields = DocumentProcessor._fields + ['login']
     _collection = 'user'
 
     @classmethod
-    def get_by_login_and_password(cls, login, password, callback):
+    def get_by_login_and_password(cls, login, password):
         '''
         Ищет модель пользователя по логину и паролю.
         Если пользователь не нашелся, возвращает None.
         @param login: string
         @param password: string
-        @param callback: function
         @return: User
         '''
         password_hash = sha1(password).hexdigest()
         filter = {'login': login, 'password_hash': password_hash}
-        cls.find_one(filter, callback)
+        return cls.find_one(filter)

@@ -7,8 +7,6 @@
 from dmgame.db.models.player import Player
 from dmgame.db.processors.base import ModelProcessor
 from dmgame.db.processors.user import UserProcessor
-from dmgame.utils.log import get_logger
-logger = get_logger(__name__)
 
 class PlayerProcessor(ModelProcessor):
     '''
@@ -16,7 +14,7 @@ class PlayerProcessor(ModelProcessor):
     '''
     
     _model = Player
-    _fields = ['connection_id']
+    _fields = ModelProcessor._fields + ['connection_id']
     
     @classmethod
     def model_to_dict(cls, model):

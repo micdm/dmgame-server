@@ -4,6 +4,7 @@
 @author: Mic, 2011
 '''
 
+from dmgame.db.models.table import GamblingTable
 from dmgame.db.models.table_member import TableMember
 from dmgame.db.processors.base import ModelProcessor, DocumentProcessor
 from dmgame.db.processors.player import PlayerProcessor
@@ -14,7 +15,7 @@ class MemberProcessor(ModelProcessor):
     '''
     
     _model = TableMember
-    _fields = ['number', 'is_turning_first']
+    _fields = ModelProcessor._fields + ['number', 'is_turning_first', 'result']
     
     @classmethod
     def model_to_dict(cls, model):
@@ -29,9 +30,11 @@ class GamblingTableProcessor(DocumentProcessor):
     '''
 
     _collection = 'table'
+    _model = GamblingTable
+    _fields = DocumentProcessor._fields + ['is_ended']
 
     @classmethod
     def model_to_dict(cls, model):
         result = super(GamblingTableProcessor, cls).model_to_dict(model)
-        result['members'] = map(MemberProcessor.model_to_dict, model._members.values())
+        result['members'] = map(MemberProcessor.model_to_dict, model.get_members())
         return result

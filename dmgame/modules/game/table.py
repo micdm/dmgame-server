@@ -6,6 +6,7 @@
 
 from random import choice
 
+from dmgame.db.models.table import GamblingTable
 from dmgame.db.models.table_member import TableMember
 from dmgame.db.processors.table import GamblingTableProcessor
 from dmgame.messages.dispatcher import player_dispatcher 
@@ -43,105 +44,81 @@ class PlayerTurn(object):
         '''
         Проверяет полученный объект.
         '''
-        
-        
-class GameResults(object):
-    '''
-    Результаты игры.
-    '''
-
-    RESULT_DEFEAT = 'defeat'
-    RESULT_WIN = 'win'
-
-    def __init__(self, members):
-        '''
-        @param members: dict
-        '''
-        self._members = members
-        
-    def _are_all_results_set(self):
-        '''
-        Установлены ли результаты для всех игроков?
-        @return: bool
-        '''
-        for member in self._members.values():
-            if member.result is None:
-                return False
-        return True
-    
-    def _send_results_message(self):
-        '''
-        Рассылает сообщение о результатах.
-        '''
-        members = self._members.values()
-        packet = outcoming.ResultsAvailablePacket(members)
-        for member in members:
-            message = messages.PlayerResponseMessage(member.player, packet)
-            player_dispatcher.dispatch(message)
-
-    def set_member_result(self, member, result):
-        '''
-        Устанавливает для игрока результат (выиграл/проиграл).
-        @param member: TableMember
-        @param result: string
-        '''
-        logger.debug('player %s has now result "%s"'%(member, result))
-        member.result = result
-        if self._are_all_results_set():
-            self._send_results_message()
 
 
-class GamblingTable(object):
+class TableManager(object):
     '''
     Абстрактный игровой стол.
     '''
+    
+    RESULT_DEFEAT = 'defeat'
+    RESULT_WIN = 'win'
 
-    def __init__(self, party):
+    def __init__(self, model):
         '''
-        @param party: PlayersParty
+        @param model: GamblingTable
         '''
-        # TODO: добавить раунды
-        # TODO: добавить сохранение в БД
-        self._is_ended = False
-        self._members = self._get_table_members(party)
+        self._model = model
         self._set_players_game_flag(True)
-        self._results = GameResults(self._members)
         self._subscribe()
         self._start()
         self._save()
-        
-    def _get_member_class(self):
+    
+    @classmethod
+    def _get_member_class(cls):
         '''
         Возвращает класс члена игрового стола.
-        @return: TableMember
+        @return: type
         '''
         return TableMember
     
-    def _get_table_members(self, party):
+    @classmethod
+    def _get_member_object(cls, number, player):
+        '''
+        Возвращает объект члена игрового стола.
+        @param number: int
+        @param player: PLayer
+        @return: TableMember
+        '''
+        member = cls._get_member_class()()
+        member.number = number
+        member.player = player
+        return member
+    
+    @classmethod
+    def _get_members_from_party(cls, party):
         '''
         Выбирает игроков из группы.
         @param party: PlayersParty
-        @return: dict
+        @return: list
         '''
-        member_class = self._get_member_class()
-        members = {}
-        for number, player in zip(range(len(party)), party):
-            members[player] = member_class(number, player)
-        return members
+        return [cls._get_member_object(number, player) for number, player in zip(range(len(party)), party)]
+    
+    @classmethod
+    def from_party(cls, party):
+        '''
+        Создает стол из группы игроков.
+        @param party: PlayersParty
+        @return: TableManager
+        '''
+        model = GamblingTable()
+        members = cls._get_members_from_party(party)
+        model.set_members(members)
+        return cls(model)
     
     def _set_players_game_flag(self, value):
         '''
         Выставляет игрокам флажки, что они сейчас играют (или уже не играют).
         @param value: bool
         '''
-        for player in self._members.keys():
+        for player in self._model.get_players():
             player.is_in_game = value
             
     def _save(self):
         '''
         Сохраняет состояние стола в БД.
         '''
-        GamblingTableProcessor.save(self)
+        GamblingTableProcessor.save(self._model)
     
     def _send_to_member(self, member, packet):
         '''
@@ -157,14 +134,14 @@ class GamblingTable(object):
         Рассылает сообщение всем.
         @param packet: OutcomingPacket
         '''
-        for member in self._members.values():
+        for member in self._model.get_members():
             self._send_to_member(member, packet)
     
     def _send_game_started_packet(self):
         '''
         Рассылает сообщение, что игра началась.
         '''
-        members = self._members.values()
+        members = self._model.get_members()
         for member in members:
             packet = outcoming.GameStartedPacket(member, members)
             self._send_to_member(member, packet)
@@ -197,7 +174,7 @@ class GamblingTable(object):
         self._on_end()
         self._send_game_ended_packet()
         self._unsubscribe()
-        self._is_ended = True
+        self._model.is_ended = True
         self._set_players_game_flag(False)
         self._send_game_ended_message()
         
@@ -206,7 +183,7 @@ class GamblingTable(object):
         Возвращает игрока, ходящего в данный момент.
         @return: TableMember
         '''
-        for member in self._members.values():
+        for member in self._model.get_members():
             if member.is_turning:
                 return member
         return None
@@ -237,14 +214,14 @@ class GamblingTable(object):
         '''
         Делает случайного игрока ходящим.
         '''
-        member = choice(self._members.values())
+        member = choice(self._model.get_members())
         self._set_member_turning(member)
         
     def _set_next_member_turning(self):
         '''
         Передает ход следующему игроку.
         '''
-        members = self._members.values()
+        members = self._model.get_members()
         current = self._get_current_turning_member()
         current_index = members.index(current)
         if current_index == len(members) - 1:
@@ -252,6 +229,36 @@ class GamblingTable(object):
         else:
             next = current_index + 1
         self._set_member_turning(members[next])
+        
+    def _are_all_results_set(self):
+        '''
+        Установлены ли результаты для всех игроков?
+        @return: bool
+        '''
+        for member in self._model.get_members():
+            if member.result is None:
+                return False
+        return True
+    
+    def _send_results_message(self):
+        '''
+        Рассылает сообщение о результатах.
+        '''
+        members = self._model.get_members()
+        packet = outcoming.ResultsAvailablePacket(members)
+        self._send_to_all(packet)
+
+    def _set_member_result(self, member, result):
+        '''
+        Устанавливает для игрока результат (выиграл/проиграл).
+        @param member: TableMember
+        @param result: string
+        '''
+        logger.debug('player %s has now result "%s"'%(member, result))
+        member.result = result
+        if self._are_all_results_set():
+            self._send_results_message()
+            self._save()
 
     def _get_turn_class(self, turn_type):
         '''
@@ -281,11 +288,11 @@ class GamblingTable(object):
         Обрабатывает ход игрока.
         @param message: PlayerRequestMessage
         '''
-        if self._is_ended:
+        if self._model.is_ended:
             return
         player = message.player
-        if player in self._members:
-            member = self._members[player]
+        if self._model.has_player(player):
+            member = self._model.get_member_by_player(player)
             if member.is_turning:
                 turn = self._get_turn_object(member, message.packet.data)
                 logger.debug('player %s made a turn %s'%(member, turn))
@@ -299,7 +306,7 @@ class GamblingTable(object):
         @param member_left: TableMember
         '''
         packet = outcoming.MemberLeavingPacket(member_leaving)
-        for member in self._members.values():
+        for member in self._model.get_members():
             if member != member_leaving:
                 self._send_to_member(member, packet)
 
@@ -309,8 +316,8 @@ class GamblingTable(object):
         @param message: PlayerDisconnectedMessage
         '''
         player = message.player
-        if player in self._members:
-            member = self._members[player]
+        if self._model.has_player(player):
+            member = self._model.get_member_by_player(player)
             self._send_member_leaving_packet(member)
             self._on_member_leaving(member)
         

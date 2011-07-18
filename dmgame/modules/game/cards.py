@@ -6,8 +6,8 @@
 
 from random import shuffle
 
-from dmgame.db.models.table_member import TableMember as BaseTableMember
-from dmgame.modules.game.table import GamblingTable
+from dmgame.db.models.table_member import CardTableMember
+from dmgame.modules.game.table import TableManager
 import dmgame.packets.outcoming.game as outcoming
 from dmgame.utils.log import get_logger
 logger = get_logger(__name__)
@@ -157,25 +157,24 @@ class MemberHand(CardSet):
     '''
     
     
-class TableMember(BaseTableMember):
-    
-    def __init__(self, *args, **kwargs):
-        super(TableMember, self).__init__(*args, **kwargs)
-        self.hand = MemberHand()
-
-
-class CardGamblingTable(GamblingTable):
+class CardTableManager(TableManager):
     '''
     Абстрактный карточный игровой стол.
     '''
 
     def __init__(self, *args, **kwargs):
         self._deck = None
-        self._hands = {}
-        super(CardGamblingTable, self).__init__(*args, **kwargs)
-        
-    def _get_member_class(self):
-        return TableMember
+        super(CardTableManager, self).__init__(*args, **kwargs)
+    
+    @classmethod
+    def _get_member_class(cls):
+        return CardTableMember
+    
+    @classmethod
+    def _get_member_object(cls, *args, **kwargs):
+        member = super(CardTableManager, cls)._get_member_object(*args, **kwargs)
+        member.hand = MemberHand()
+        return member
 
     def _create_deck(self, type, count):
         '''
@@ -188,10 +187,10 @@ class CardGamblingTable(GamblingTable):
     def _send_giving_cards_message(self, recipient, cards):
         '''
         Рассылает сообщение о получении игроком карт.
-        @param recipient: TableMember
+        @param recipient: CardTableMember
         @param cards: CardSet
         '''
-        for member in self._members.values():
+        for member in self._model.get_members():
             if member == recipient:
                 packet = outcoming.GivingCardsPacket(recipient, cards, True)
             else:
@@ -214,14 +213,14 @@ class CardGamblingTable(GamblingTable):
         '''
         Открывает карты всех игроков.
         '''
-        packet = outcoming.OpeningCardsPacket(self._members.values())
+        packet = outcoming.OpeningCardsPacket(self._model.get_members())
         self._send_to_all(packet)
         self._on_open_all_cards()
         
     def _on_give_cards_to_member(self, member, cards):
         '''
         Выполняется при выдаче карт игроку.
-        @param member: TableMember
+        @param member: CardTableMember
         @param cards: CardSet
         '''
 

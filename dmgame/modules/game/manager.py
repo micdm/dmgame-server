@@ -24,7 +24,7 @@ class GameManager(object):
         @param message: PartyReadyMessage
         '''
         logger.debug('starting game')
-        table = a_la_21.GamblingTable(message.party)
+        table = a_la_21.GameTableManager.from_party(message.party)
         self._tables.append(table)
         
     def _on_game_ended(self, message):

@@ -111,22 +111,22 @@ class GivingCardsPacket(GamePacket):
     
     type = 'giving_cards'
     
-    def __init__(self, member, cards, hidden):
+    def __init__(self, member, cards, visible):
         '''
         @param member: TableMember
         @param cards: CardSet
-        @param hidden: bool
+        @param visible: bool
         '''
         self.member = member
         self.cards = cards
-        self.hidden = hidden
+        self.visible = visible
         
     def _get_data(self):
         result = {'id': self.member.number}
-        if self.hidden:
-            result['count'] = len(self.cards)
-        else:
+        if self.visible:
             result['cards'] = map(card_as_dict, self.cards)
+        else:
+            result['count'] = len(self.cards)
         return result
     
     
