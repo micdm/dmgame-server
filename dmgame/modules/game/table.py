@@ -6,7 +6,7 @@
 
 from random import choice
 
-from dmgame.db.models import TableMember
+from dmgame.db.models.table_member import TableMember
 from dmgame.db.processors.table import GamblingTableProcessor
 from dmgame.messages.dispatcher import player_dispatcher 
 import dmgame.messages.messages as messages

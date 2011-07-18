@@ -4,7 +4,7 @@
 @author: Mic, 2011
 '''
 
-from dmgame.db.models import Player
+from dmgame.db.models.player import Player
 from dmgame.messages.dispatcher import player_dispatcher, user_dispatcher
 import dmgame.messages.messages as messages
 from dmgame.modules.hall.queue import PlayersQueue

@@ -4,7 +4,7 @@
 @author: Mic, 2011
 '''
 
-from dmgame.db.models import Player
+from dmgame.db.models.player import Player
 from dmgame.db.processors.base import ModelProcessor
 from dmgame.db.processors.user import UserProcessor
 from dmgame.utils.log import get_logger

@@ -6,7 +6,7 @@
 
 from hashlib import sha1
 
-from dmgame.db.models import User
+from dmgame.db.models.user import User
 from dmgame.db.processors.base import DocumentProcessor
 from dmgame.utils.log import get_logger
 logger = get_logger(__name__)

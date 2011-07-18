@@ -6,7 +6,7 @@
 
 from random import shuffle
 
-from dmgame.db.models import TableMember as BaseTableMember
+from dmgame.db.models.table_member import TableMember as BaseTableMember
 from dmgame.modules.game.table import GamblingTable
 import dmgame.packets.outcoming.game as outcoming
 from dmgame.utils.log import get_logger

@@ -12,7 +12,6 @@ from dmgame.utils.log import get_logger
 logger = get_logger(__name__)
 from dmgame.utils.timer import Timer
 
-
 class PlayersParty(list):
     '''
     Компания игроков.

@@ -4,7 +4,7 @@
 @author: Mic, 2011
 '''
 
-from dmgame.db.models import TableMember
+from dmgame.db.models.table_member import TableMember
 from dmgame.db.processors.base import ModelProcessor, DocumentProcessor
 from dmgame.db.processors.player import PlayerProcessor
 
