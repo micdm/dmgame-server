@@ -13,7 +13,8 @@ class GamblingTable(Model):
 
     def __init__(self):
         self.members = {}
-        self.is_ended = False
+        self.start_time = None
+        self.end_time = None
         
     def get_players(self):
         '''

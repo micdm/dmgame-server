@@ -31,7 +31,7 @@ class GamblingTableProcessor(DocumentProcessor):
 
     _collection = 'table'
     _model = GamblingTable
-    _fields = DocumentProcessor._fields + ['is_ended']
+    _fields = DocumentProcessor._fields + ['start_time', 'end_time']
 
     @classmethod
     def model_to_dict(cls, model):

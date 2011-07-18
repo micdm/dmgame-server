@@ -4,6 +4,7 @@
 @author: Mic, 2011
 '''
 
+from datetime import datetime
 from random import choice
 
 from dmgame.db.models.table import GamblingTable
@@ -62,7 +63,6 @@ class TableManager(object):
         self._set_players_game_flag(True)
         self._subscribe()
         self._start()
-        self._save()
     
     @classmethod
     def _get_member_class(cls):
@@ -150,8 +150,10 @@ class TableManager(object):
         '''
         Начинает игру.
         '''
+        self._model.start_time = datetime.utcnow()
         self._send_game_started_packet()
         self._on_start()
+        self._save()
         
     def _send_game_ended_packet(self):
         '''
@@ -174,8 +176,9 @@ class TableManager(object):
         self._on_end()
         self._send_game_ended_packet()
         self._unsubscribe()
-        self._model.is_ended = True
+        self._model.end_time = datetime.utcnow()
         self._set_players_game_flag(False)
+        self._save()
         self._send_game_ended_message()
         
     def _get_current_turning_member(self):
@@ -258,7 +261,6 @@ class TableManager(object):
         member.result = result
         if self._are_all_results_set():
             self._send_results_message()
-            self._save()
 
     def _get_turn_class(self, turn_type):
         '''
@@ -288,7 +290,7 @@ class TableManager(object):
         Обрабатывает ход игрока.
         @param message: PlayerRequestMessage
         '''
-        if self._model.is_ended:
+        if self._model.end_time is not None:
             return
         player = message.player
         if self._model.has_player(player):
