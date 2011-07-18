@@ -11,13 +11,13 @@ class TableMember(Model):
     Член игрового стола.
     '''
     
-    def __init__(self, number, player):
+    def __init__(self):
         '''
         @param number: int
         @param player: Player
         '''
-        self.number = number
-        self.player = player
+        self.number = None
+        self.player = None
         self.is_turning = False
         self.is_turning_first = False
         self.result = None
@@ -30,3 +30,13 @@ class TableMember(Model):
     
     def __ne__(self, other):
         return not self.__eq__(other)
+
+
+class CardTableMember(TableMember):
+    '''
+    Член карточного игрового стола.
+    '''
+    
+    def __init__(self, *args, **kwargs):
+        super(CardTableMember, self).__init__(*args, **kwargs)
+        self.hand = None
